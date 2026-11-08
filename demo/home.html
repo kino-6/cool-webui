@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>家の画面（部品だけで組んだもの）</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  nav { display: flex; gap: 10px; }
+  nav button {
+    font: 500 15px var(--cw-font); color: var(--cw-text); background: var(--cw-surface); border: var(--cw-border);
+    border-radius: 999px; padding: 9px 20px; cursor: pointer; backdrop-filter: var(--cw-blur); white-space: nowrap;
+  }
+  nav button[aria-current='true'] { background: var(--cw-surface-on); color: var(--cw-text-on); }
+
+  /* quiet: room tiles */
+  .home, .energy { position: absolute; inset: 40px 40px 96px; display: grid; gap: 20px; }
+  .home { grid-template-columns: 360px 1fr 380px; grid-template-rows: 250px 1fr; }
+  .energy { grid-template-columns: repeat(4, 1fr); grid-template-rows: 200px 1fr; }
+  .rooms { grid-row: span 2; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 20px; }
+  .rooms cw-panel { cursor: pointer; }
+  .list { display: flex; flex-direction: column; gap: 14px; }
+  .pair { display: grid; grid-template-rows: 1fr 1fr; gap: 6px; height: 100%; }
+  .span2 { grid-column: span 2; }
+  .foot { position: absolute; left: 40px; right: 40px; bottom: 28px; height: 48px; display: flex; gap: 16px; align-items: center; }
+  .foot cw-panel { flex: 1; }
+  .lights { position: absolute; inset: 40px 40px 96px; }
+  .cams { position: absolute; inset: 40px 40px 96px; display: grid; grid-template-columns: 1.4fr 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 20px; }
+  .areas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-height: 0; }
+  .span-rows { grid-row: span 2; }
+  .chores { position: absolute; inset: 40px 40px 96px; display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 20px; }
+  .chores .span-rows { grid-row: span 2; }
+  .day { position: absolute; inset: 40px 40px 96px; display: grid; grid-template-columns: 1.3fr 1fr; grid-template-rows: 1fr 1fr; gap: 20px; }
+  .switches { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+  /* bold: the prototype's layout, a rail on the left and a 1192 x 836 screen area */
+  .at { position: absolute; }
+  /* six screens: two columns of three in the rail */
+  .rail nav { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 4px; height: 100%; }
+  .rail nav button { min-width: 0; border-radius: 12px; font-size: 17px; text-align: left; padding: 0 12px; background: transparent; border: 0; backdrop-filter: none; }
+  .rail nav button[aria-current='true'] { background: var(--cw-surface-on); color: var(--cw-text-on); }
+  .area { position: absolute; left: 376px; top: 32px; width: 1192px; height: 836px; }
+  .focus-name { font: 600 34px var(--cw-font); color: var(--cw-text); margin: 2px 0 6px; }
+  .trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; height: 92px; }
+  .swatch { height: 10px; border-radius: 5px; margin-top: 18px; transition: background .6s; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chips button {
+    font: 500 14px var(--cw-font); color: var(--cw-text); background: color-mix(in srgb, var(--cw-text) 7%, transparent);
+    border: 0; border-radius: 999px; height: 36px; padding: 0 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    transition: box-shadow .6s, background .6s;
+  }
+  .chips button i { width: 9px; height: 9px; border-radius: 50%; background: var(--cw-text-dim); }
+  .chips button[aria-pressed='true'] { box-shadow: 0 0 40px -6px var(--lamp); }
+  .chips button[aria-pressed='true'] i { background: var(--lamp); }
+  .plan-log { position: absolute; left: 0; bottom: 0; width: 440px; height: 92px; }
+
+  /* game look on the bold layout: panels lean both ways, a ring turns behind the floor plan, a huge focus name */
+  .ring { position: absolute; left: 60%; top: 46%; width: 480px; height: 480px; transform: translate(-50%, -50%); display: none; }
+  [data-theme='game'] .ring { display: block; }
+  [data-theme='game'] .rail cw-panel:first-child { --cw-clock-size: 70px !important; }
+  #plan { position: relative; }
+  [data-theme='game'] .focus-name { font: 900 64px/1 var(--cw-display-font); font-stretch: var(--cw-display-stretch); margin: 6px 0 10px; }
+  [data-theme='game'] cw-panel:nth-of-type(odd) { --cw-tilt: 0.9deg; }
+  [data-theme='game'] cw-panel:nth-of-type(3n) { --cw-tilt: -1.4deg; }
+  [data-theme='game'] .rail nav button { border-radius: 0; font: 900 20px var(--cw-display-font); font-stretch: var(--cw-display-stretch); }
+  [data-theme='game'] .rail nav button[aria-current='true'] { background: var(--cw-signal); color: var(--cw-text-on); transform: skewX(-12deg) translateX(10px); }
+  [data-theme='game'] .chips button { border-radius: 0; transform: skewX(-10deg); }
+
+  /* switches: macOS `open` drops ?query from file URLs, so the page offers its own */
+  .pick { position: fixed; top: 8px; right: 8px; z-index: 10; display: flex; gap: 6px; }
+  .pick div { display: flex; align-items: center; border-radius: 999px; overflow: hidden; background: rgb(0 0 0 / .55); }
+  .pick span { font: 500 12px system-ui, sans-serif; color: #8a8a8a; padding: 0 4px 0 12px; }
+  .pick button { font: 500 12px system-ui, sans-serif; color: #cfcfcf; background: none; border: 0; padding: 6px 11px; cursor: pointer; }
+  .pick button[aria-pressed='true'] { background: #ededed; color: #121212; }
+</style>
+<body>
+<cw-stage id="stage"></cw-stage>
+<nav class="pick" aria-label="雰囲気の切り替え">
+  <div><button data-variant="quiet" data-theme="tile">シンプル</button><button data-variant="quiet" data-theme="glass">ガラス</button><button data-variant="bold" data-theme="glass">派手</button><button data-variant="bold" data-theme="game">ゲーム</button></div>
+  <div role="group" aria-label="動き"><span>動き</span><button data-motion="off">なし</button><button data-motion="calm">控えめ</button><button data-motion="full">多め</button></div>
+</nav>
+
+<template id="quiet">
+  <cw-screens keys>
+    <cw-screen name="home">
+      <div class="home">
+        <cw-panel label="いま"><cw-clock></cw-clock></cw-panel>
+        <div class="rooms" id="rooms"></div>
+        <cw-panel label="家の中" sublabel="平均">
+          <div class="pair">
+            <cw-stat id="avg-temp" label="室温" unit="°C" digits="1" warn-above="28" warn-below="16"></cw-stat>
+            <cw-stat id="power-now" label="いまの電力" unit="W" warn-above="3000"></cw-stat>
+          </div>
+        </cw-panel>
+        <cw-panel label="人と戸締まり">
+          <div class="list">
+            <cw-status id="p-aoi" label="アオイ"></cw-status>
+            <cw-status id="p-haru" label="ハル"></cw-status>
+            <cw-status id="lock" label="玄関の鍵"></cw-status>
+            <cw-status id="window" label="寝室の窓"></cw-status>
+            <cw-status id="camera" label="庭のカメラ"></cw-status>
+            <cw-status id="washer" label="洗濯機"></cw-status>
+          </div>
+        </cw-panel>
+        <cw-panel label="出来事"><cw-log id="log" lines="9"></cw-log></cw-panel>
+      </div>
+    </cw-screen>
+    <cw-screen name="energy">
+      <div class="energy">
+        <cw-panel label="太陽光"><cw-stat id="e-solar" unit="W"></cw-stat></cw-panel>
+        <cw-panel label="家で使用"><cw-stat id="e-home" unit="W" warn-above="3000"></cw-stat></cw-panel>
+        <cw-panel label="電池"><cw-stat id="e-batt" unit="%" warn-below="20"></cw-stat></cw-panel>
+        <cw-panel label="買電" sublabel="マイナスは売電"><cw-stat id="e-grid" unit="W"></cw-stat></cw-panel>
+        <cw-panel label="電力の推移" sublabel="直近 2 分" class="span2"><cw-chart id="e-chart" series="使用,太陽光" unit="W" points="60" min="0"></cw-chart></cw-panel>
+        <cw-panel label="部屋ごとの電力" class="span2"><cw-bars id="e-rooms" unit="W"></cw-bars></cw-panel>
+      </div>
+    </cw-screen>
+    <cw-screen name="lights">
+      <div class="lights"><cw-panel label="照明" style="height:auto"><div class="switches" id="switches"></div></cw-panel><cw-panel label="窓" style="height:auto;margin-top:20px"><div class="switches" id="covers"></div></cw-panel><cw-panel label="部屋" style="height:auto;margin-top:20px"><div class="areas" id="areas"></div></cw-panel></div>
+    </cw-screen>
+    <cw-screen name="cams">
+      <div class="cams">
+        <cw-panel label="防犯カメラ" class="span-rows"><cw-camera label="庭" src="img/garden.svg" refresh="10"></cw-camera></cw-panel>
+        <cw-panel><cw-camera label="玄関" src="img/entrance.svg" refresh="10"></cw-camera></cw-panel>
+        <cw-panel><cw-camera label="車庫" src="img/garage.svg" refresh="10"></cw-camera></cw-panel>
+        <cw-panel label="防犯" class="span-rows" style="grid-column:3;grid-row:1 / span 2"><cw-alarm id="alarm" label="家"></cw-alarm></cw-panel>
+      </div>
+    </cw-screen>
+    <cw-screen name="day">
+      <div class="day">
+        <cw-panel label="天気" sublabel="東京"><cw-weather id="wx"></cw-weather></cw-panel>
+        <cw-panel label="家族の予定" class="span-rows"><cw-agenda id="agenda"></cw-agenda></cw-panel>
+        <div class="duo">
+          <cw-panel label="居間の空調"><cw-dial id="thermo" label="室温" unit="°C" min="16" max="30" digits="1" target="22.5"></cw-dial></cw-panel>
+          <cw-panel label="空"><cw-sky id="sky"></cw-sky></cw-panel>
+        </div>
+      </div>
+    </cw-screen>
+    <cw-screen name="chores">
+      <div class="chores">
+        <cw-panel label="掃除機"><cw-vacuum id="robot" label="ルンバ"></cw-vacuum></cw-panel>
+        <cw-panel label="洗濯と食器"><div class="list" style="gap:18px"><cw-timer id="washer-t" label="洗濯機"></cw-timer><cw-timer id="dish-t" label="食洗機"></cw-timer></div></cw-panel>
+        <cw-panel label="電池" class="span-rows"><cw-battery id="batteries"></cw-battery></cw-panel>
+        <cw-panel label="家族"><cw-person id="family"></cw-person></cw-panel>
+        <cw-panel label="買い物"><cw-todo id="shopping" max="6"></cw-todo></cw-panel>
+      </div>
+    </cw-screen>
+  </cw-screens>
+  <div class="foot">
+    <nav><button data-to="home">1 ホーム</button><button data-to="energy">2 エネルギー</button><button data-to="lights">3 照明</button><button data-to="cams">4 カメラ</button><button data-to="day">5 今日</button><button data-to="chores">6 家事</button></nav>
+    <cw-panel style="height:48px;--cw-panel-padding:6px 18px"><cw-ticker id="ticker" speed="70"></cw-ticker></cw-panel>
+  </div>
+</template>
+
+<template id="bold">
+  <div class="rail">
+    <cw-panel class="at" label="ホーム" style="left:32px;top:32px;width:320px;height:236px;--cw-clock-size:86px"><cw-clock></cw-clock></cw-panel>
+    <cw-panel class="at" label="在宅" style="left:32px;top:292px;width:320px;height:132px">
+      <div class="list" style="gap:10px"><cw-status id="p-aoi" label="アオイ"></cw-status><cw-status id="p-haru" label="ハル"></cw-status></div>
+    </cw-panel>
+    <cw-panel class="at" style="left:32px;top:448px;width:320px;height:200px;--cw-panel-padding:12px">
+      <nav><button data-to="home">ホーム</button><button data-to="energy">エネルギー</button><button data-to="lights">照明</button><button data-to="cams">カメラ</button><button data-to="day">今日</button><button data-to="chores">家事</button></nav>
+    </cw-panel>
+    <cw-panel class="at" label="防犯と家事" style="left:32px;top:672px;width:320px;height:196px">
+      <div class="list" style="gap:10px">
+        <cw-status id="lock" label="玄関の鍵"></cw-status><cw-status id="window" label="寝室の窓"></cw-status>
+        <cw-status id="camera" label="庭のカメラ"></cw-status><cw-status id="washer" label="洗濯機"></cw-status>
+      </div>
+    </cw-panel>
+  </div>
+  <cw-screens class="area" keys>
+    <cw-screen name="home">
+      <cw-panel class="at" label="家のようす" style="left:0;top:0;width:770px;height:560px">
+        <cw-ring class="ring" id="ring" speed="80"></cw-ring>
+        <cw-floorplan id="plan"></cw-floorplan>
+        <cw-log class="plan-log" id="log" lines="3"></cw-log>
+      </cw-panel>
+      <cw-panel class="at" label="注目の部屋" style="left:796px;top:0;width:396px;height:270px">
+        <div class="focus-name" id="fc-name"></div>
+        <div class="trio">
+          <cw-stat id="fc-bri" label="明るさ" unit="%"></cw-stat><cw-stat id="fc-temp" label="室温" unit="°" digits="1"></cw-stat><cw-stat id="fc-hum" label="湿度" unit="%"></cw-stat>
+        </div>
+        <div class="swatch" id="fc-sw"></div>
+      </cw-panel>
+      <cw-panel class="at" label="家の中" sublabel="平均" style="left:796px;top:296px;width:396px;height:264px">
+        <div class="pair">
+          <cw-stat id="avg-temp" label="室温" unit="°C" digits="1" warn-above="28" warn-below="16"></cw-stat>
+          <cw-stat id="power-now" label="いまの電力" unit="W" warn-above="3000"></cw-stat>
+        </div>
+      </cw-panel>
+      <cw-panel class="at" label="照明" style="left:0;top:586px;width:380px;height:250px"><div class="chips" id="chips"></div></cw-panel>
+      <cw-panel class="at" label="再生中 · 居間のスピーカー" style="left:406px;top:586px;width:380px;height:250px">
+        <cw-media id="player" style="height:124px"></cw-media>
+        <div style="height:40px;margin-top:14px"><cw-ticker id="ticker" speed="70"></cw-ticker></div>
+      </cw-panel>
+      <cw-panel class="at" label="部屋の室温" style="left:812px;top:586px;width:380px;height:250px"><cw-bars id="temps" unit="°C" max="30"></cw-bars></cw-panel>
+    </cw-screen>
+    <cw-screen name="energy">
+      <cw-panel class="at" label="電気の流れ" style="left:0;top:0;width:770px;height:560px"><cw-flow id="flow" unit="W"></cw-flow></cw-panel>
+      <cw-panel class="at" label="家で使っている電力" style="left:796px;top:0;width:396px;height:176px"><cw-stat id="e-home" unit="W" warn-above="3000"></cw-stat></cw-panel>
+      <cw-panel class="at" label="太陽光" style="left:796px;top:192px;width:396px;height:176px"><cw-stat id="e-solar" unit="W"></cw-stat></cw-panel>
+      <cw-panel class="at" label="蓄電池" style="left:796px;top:384px;width:396px;height:176px"><cw-stat id="e-batt" unit="%" warn-below="20"></cw-stat></cw-panel>
+      <cw-panel class="at" label="電力の推移" sublabel="直近 2 分" style="left:0;top:586px;width:1192px;height:250px"><cw-chart id="e-chart" series="使用,太陽光" unit="W" points="60" min="0"></cw-chart></cw-panel>
+    </cw-screen>
+    <cw-screen name="lights">
+      <div style="position:absolute;left:0;top:0;width:1192px;display:flex;flex-direction:column;gap:26px">
+        <cw-panel label="照明" style="height:auto"><div class="switches" id="switches"></div></cw-panel>
+        <cw-panel label="窓" style="height:auto"><div class="switches" id="covers"></div></cw-panel>
+        <cw-panel label="部屋" style="height:auto"><div class="areas" id="areas"></div></cw-panel>
+      </div>
+    </cw-screen>
+    <cw-screen name="cams">
+      <cw-panel class="at" label="防犯カメラ" style="left:0;top:0;width:770px;height:405px"><cw-camera label="庭" src="img/garden.svg" refresh="10"></cw-camera></cw-panel>
+      <cw-panel class="at" style="left:0;top:431px;width:372px;height:405px"><cw-camera label="玄関" src="img/entrance.svg" refresh="10"></cw-camera></cw-panel>
+      <cw-panel class="at" style="left:398px;top:431px;width:372px;height:405px"><cw-camera label="車庫" src="img/garage.svg" refresh="10"></cw-camera></cw-panel>
+      <cw-panel class="at" label="防犯" style="left:796px;top:0;width:396px;height:836px"><cw-alarm id="alarm" label="家"></cw-alarm></cw-panel>
+    </cw-screen>
+    <cw-screen name="day">
+      <cw-panel class="at" label="天気 · 東京" style="left:0;top:0;width:770px;height:400px"><cw-weather id="wx"></cw-weather></cw-panel>
+      <cw-panel class="at" label="居間の空調" style="left:0;top:426px;width:372px;height:410px"><cw-dial id="thermo" label="室温" unit="°C" min="16" max="30" digits="1" target="22.5"></cw-dial></cw-panel>
+      <cw-panel class="at" label="空" style="left:398px;top:426px;width:372px;height:410px"><cw-sky id="sky"></cw-sky></cw-panel>
+      <cw-panel class="at" label="家族の予定" style="left:796px;top:0;width:396px;height:836px"><cw-agenda id="agenda"></cw-agenda></cw-panel>
+    </cw-screen>
+    <cw-screen name="chores">
+      <cw-panel class="at" label="掃除機" style="left:0;top:0;width:380px;height:260px"><cw-vacuum id="robot" label="ルンバ"></cw-vacuum></cw-panel>
+      <cw-panel class="at" label="洗濯と食器" style="left:404px;top:0;width:366px;height:260px"><div class="list" style="gap:18px"><cw-timer id="washer-t" label="洗濯機"></cw-timer><cw-timer id="dish-t" label="食洗機"></cw-timer></div></cw-panel>
+      <cw-panel class="at" label="家族" style="left:0;top:286px;width:372px;height:550px"><cw-person id="family"></cw-person></cw-panel>
+      <cw-panel class="at" label="買い物" style="left:398px;top:286px;width:372px;height:550px"><cw-todo id="shopping"></cw-todo></cw-panel>
+      <cw-panel class="at" label="電池" style="left:796px;top:0;width:396px;height:836px"><cw-battery id="batteries"></cw-battery></cw-panel>
+    </cw-screen>
+  </cw-screens>
+</template>
+
+<script>
+  // ---- a simulated home: the page only sets values on cw- elements ----
+  const q = new URLSearchParams(location.search);
+  const BOLD = q.get('variant') === 'bold';
+  const stage = document.getElementById('stage');
+  stage.setAttribute('motion', q.get('motion') || (BOLD ? 'full' : 'calm'));
+  if (q.get('bg')) stage.setAttribute('bg', q.get('bg'));
+  stage.append(document.getElementById(BOLD ? 'bold' : 'quiet').content.cloneNode(true));
+  document.documentElement.dataset.variant = BOLD ? 'bold' : 'quiet';
+  // a mood is a layout and a look together; choosing one starts at that layout's motion
+  const look = document.documentElement.dataset.theme, motionNow = stage.getAttribute('motion');
+  for (const b of document.querySelectorAll('.pick button')) {
+    const { variant: v, theme: t, motion: m } = b.dataset;
+    b.setAttribute('aria-pressed', String(m ? m === motionNow : v === (BOLD ? 'bold' : 'quiet') && t === look));
+    b.onclick = () => {
+      const next = new URLSearchParams(location.search);
+      if (m) next.set('motion', m);
+      else { next.set('variant', v); next.set('theme', t); next.delete('motion'); }
+      location.search = next;
+    };
+  }
+  const $ = (id) => document.getElementById(id);
+  const now = () => new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+  const lamp = (r) => `hsl(${r.hue} 90% 62%)`;
+
+  // x, y, w, h place each room on the floor plan, in grid units
+  const rooms = [
+    { id: 'living', name: '居間', x: 0, y: 0, w: 6, h: 4.5, on: true, bri: 0.85, hue: 36, temp: 22.4, hum: 47, watts: 180 },
+    { id: 'kitchen', name: '台所', x: 6, y: 0, w: 3, h: 4.5, on: true, bri: 0.6, hue: 48, temp: 23.1, hum: 52, watts: 140 },
+    { id: 'study', name: '書斎', x: 9, y: 0, w: 3, h: 4.5, on: false, bri: 0.7, hue: 205, temp: 21.0, hum: 44, watts: 95 },
+    { id: 'bedroom', name: '寝室', x: 0, y: 4.5, w: 5, h: 3.5, on: true, bri: 0.35, hue: 275, temp: 20.6, hum: 50, watts: 30 },
+    { id: 'bath', name: '浴室', x: 5, y: 4.5, w: 3, h: 3.5, on: false, bri: 0.9, hue: 190, temp: 24.8, hum: 71, watts: 8 },
+    { id: 'entrance', name: '玄関', x: 8, y: 4.5, w: 4, h: 3.5, on: false, bri: 0.5, hue: 30, temp: 19.2, hum: 46, watts: 12 },
+  ];
+  const people = [{ name: 'アオイ', color: '#9cc9ef', room: 'living' }, { name: 'ハル', color: '#f2c38b', room: null }];
+  // the washer ends at one time; the rail and the chores screen both count down to it
+  const sec = { locked: true, windowOpen: true, camera: 'online', washEnd: Date.now() + 20 * 60e3 };
+  const washLeft = () => Math.max(0, Math.ceil((sec.washEnd - Date.now()) / 60e3));
+  let battery = 76, focusIdx = 0;
+  const lastChanged = Date.now() - 2 * 3600e3;
+
+  function log(level, type, text) { $('log').push({ time: now(), level, type, text }); }
+  function toggle(r) { r.on = !r.on; log('info', '照明', `${r.name} を${r.on ? '点灯' : '消灯'}`); render(); }
+
+  function energyNow() {
+    const h = new Date().getHours() + new Date().getMinutes() / 60;
+    const solar = Math.max(0, Math.round(3200 * Math.sin(((h - 6) / 12) * Math.PI)));
+    const home = Math.round(260 + rooms.reduce((n, r) => n + (r.on ? r.watts * r.bri : 0), 0) + (washLeft() > 0 ? 420 : 0) + Math.random() * 40);
+    const batt = solar > home ? -Math.min(1500, solar - home) : Math.min(1500, home - solar) * (battery > 15 ? 0.6 : 0);
+    return { solar, home, batt, grid: Math.round(home - solar - batt) };
+  }
+
+  // quiet: one tile per room
+  const tiles = BOLD ? [] : rooms.map((r) => {
+    const p = document.createElement('cw-panel');
+    const s = document.createElement('cw-stat');
+    s.label = '明るさ';
+    s.unit = '%';
+    p.append(s);
+    p.addEventListener('click', () => toggle(r));
+    $('rooms').append(p);
+    return { p, s };
+  });
+
+  // the lighting screen: one switch per room; a press or the slider changes the room
+  const switches = rooms.map((r) => {
+    const sw = document.createElement('cw-switch');
+    sw.label = r.name;
+    sw.addEventListener('cw-toggle', (e) => { r.on = e.detail.on; log('info', '照明', `${r.name} を${r.on ? '点灯' : '消灯'}`); render(); });
+    sw.addEventListener('cw-level', (e) => {
+      r.on = e.detail.level > 0;
+      if (r.on) r.bri = e.detail.level;
+      log('info', '照明', r.on ? `${r.name} ${Math.round(r.bri * 100)}% に変更` : `${r.name} を消灯`);
+      render();
+    });
+    $('switches').append(sw);
+    return sw;
+  });
+
+  // bold: the living-room speaker; next and previous walk a short playlist
+  const playlist = [
+    { title: '夜の窓辺', artist: 'Lumen Field', duration: 222 }, { title: 'Slow Tide', artist: 'Harbor Lights', duration: 180 },
+    { title: '雨の駅', artist: 'Kiri', duration: 205 },
+  ];
+  let song = 0;
+  if (BOLD) {
+    const player = $('player');
+    player.now = { ...playlist[0], art: 'img/cover.svg', state: 'playing', position: 65, volume: 0.4 };
+    player.addEventListener('cw-media', (e) => {
+      const a = e.detail.action;
+      if (a === 'next' || a === 'previous') {
+        song = (song + (a === 'next' ? 1 : playlist.length - 1)) % playlist.length;
+        player.now = { ...playlist[song], position: 0, state: 'playing' };
+        log('info', '音楽', `${playlist[song].title} を再生`);
+      } else log('info', '音楽', a === 'pause' ? '一時停止' : '再生を再開');
+    });
+    player.addEventListener('cw-volume', (e) => log('info', '音楽', `音量 ${Math.round(e.detail.volume * 100)}%`));
+  }
+
+  // the day screen: the weather, the family's plans and the living-room air conditioner
+  {
+    const H = 3600e3, t = Date.now(), at = (n, h) => { const d = new Date(); d.setDate(d.getDate() + n); d.setHours(h, 0, 0, 0); return d.getTime(); };
+    $('wx').now = { condition: 'partlycloudy', temp: 14.6, high: 18, low: 9, humidity: 58, wind: 3.2 };
+    $('wx').forecast = ['partlycloudy', 'rainy', 'cloudy', 'sunny', 'lightning-rainy'].map((c, i) => ({ time: at(i, 9), condition: c, high: [18, 15, 16, 20, 17][i], low: [9, 11, 10, 8, 12][i], rain: [10, 80, 30, 0, 90][i] }));
+    $('agenda').events = [
+      { title: 'オンラインの会議', start: t - 0.3 * H, end: t + 0.7 * H, where: '書斎' },
+      { title: '洗濯物を取り込む', start: t + 0.5 * H, end: t + 0.6 * H },
+      { title: '燃えるごみ', start: at(1, 0), allDay: true, color: '#80c994' },
+      { title: 'ハル 遠足', start: at(1, 8), end: at(1, 15), where: '動物園', color: '#c08bf2' },
+      { title: '車の点検', start: at(3, 13), end: at(3, 14), where: '車庫' },
+    ];
+    $('thermo').addEventListener('cw-target', (e) => log('info', '空調', `居間 ${e.detail.target.toFixed(1)}°C に設定`));
+  }
+
+  // the chores screen: the robot vacuum, two appliances counting down, every battery and who is where; windows under the lights
+  {
+    const t = Date.now(), M = 60e3, robot = $('robot');
+    robot.now = { state: 'cleaning', battery: 64, area: 18, duration: 21 };
+    robot.addEventListener('cw-vacuum', (e) => {
+      log('info', '掃除機', { start: '掃除を始めた', pause: '一時停止', stop: '止めた', return: '充電台に戻した' }[e.detail.action]);
+      if (e.detail.action === 'return') setTimeout(() => { robot.now = { state: 'docked' }; }, 4000);
+    });
+    $('washer-t').now = { state: 'active', end: sec.washEnd, duration: 90 * 60 };
+    $('dish-t').now = { state: 'paused', remaining: 14 * 60 + 20, duration: 75 * 60 };
+    $('washer-t').addEventListener('cw-done', () => log('info', '家電', '洗濯が終わった'));
+    $('batteries').items = [
+      { name: '寝室の温度計', level: 12 }, { name: '玄関の人感センサー', level: 64 }, { name: '窓の開閉センサー', level: 38 }, { name: 'ルンバ', level: 64, charging: false },
+      { name: '浴室の水漏れ', low: false }, { name: 'ドアの鍵', level: 23 }, { name: 'スマホ', level: 81, charging: true },
+    ];
+    $('family').people = [
+      { name: 'アオイ', place: 'home', since: t - 2 * 3600e3 - 14 * M, picture: 'img/cover.svg' }, { name: 'ハル', place: 'not_home', since: t - 3 * 3600e3 },
+      { name: 'ソラ', place: '学校', since: t - 5 * 3600e3 }, { name: 'リク', place: 'home', since: t - 25 * M },
+    ];
+    [['居間の窓', 'open', 60], ['寝室のブラインド', 'closed', 0], ['書斎の窓', 'open', 100]].forEach(([label, state, position]) => {
+      const c = document.createElement('cw-cover');
+      c.label = label;
+      c.now = { state, position };
+      c.addEventListener('cw-cover', (e) => {
+        log('info', label, { open: '開ける', close: '閉める', stop: '止めた' }[e.detail.action]);
+        if (e.detail.action !== 'stop') setTimeout(() => { c.now = { state: e.detail.action === 'open' ? 'open' : 'closed', position: e.detail.action === 'open' ? 100 : 0 }; }, 2000);
+      });
+      c.addEventListener('cw-position', (e) => { log('info', label, `${e.detail.position}% に`); c.now = { state: e.detail.position ? 'open' : 'closed' }; });
+      $('covers').append(c);
+    });
+  }
+
+  // rooms at a glance under the lights: the same rooms, a press turns the room's light off or on
+  const areas = ['living', 'bedroom', 'study'].map((id) => {
+    const r = rooms.find((x) => x.id === id), a = document.createElement('cw-area');
+    a.label = r.name;
+    a.addEventListener('cw-lights', (e) => { if (r.on !== e.detail.on) toggle(r); });
+    $('areas').append(a);
+    return [a, r];
+  });
+  // the sky beside the air conditioner, the alarm beside the cameras, the shopping list on the chores screen
+  {
+    const t = Date.now(), H = 3600e3, noon = new Date(); noon.setHours(12, 0, 0, 0);
+    $('sky').now = { rise: noon.getTime() - 5.3 * H, set: noon.getTime() + 4.8 * H, phase: 'waxing_gibbous' };
+    const alarm = $('alarm');
+    alarm.now = { state: 'armed_home', codeFormat: 'number', codeArmRequired: false, modes: ['home', 'away', 'night'] };
+    alarm.addEventListener('cw-alarm', (e) => {
+      // a demo: any code disarms; the code is never written anywhere
+      log('info', '防犯', e.detail.action === 'disarm' ? '解除した' : { arm_home: '在宅警戒にした', arm_away: '外出警戒にした', arm_night: '夜間警戒にした' }[e.detail.action]);
+      setTimeout(() => { alarm.now = { state: e.detail.action === 'disarm' ? 'disarmed' : e.detail.action.replace('arm_', 'armed_') }; }, 1500);
+    });
+    const day = (n) => { const d = new Date(t); d.setDate(d.getDate() + n); return d.toLocaleDateString('sv'); };
+    let items = [
+      { uid: 's1', summary: '牛乳', status: 'needs_action' }, { uid: 's2', summary: '電池（単三）', status: 'needs_action', due: day(1) },
+      { uid: 's3', summary: '洗剤', status: 'needs_action', due: day(-1) }, { uid: 's4', summary: 'パン', status: 'completed' }, { uid: 's5', summary: '卵', status: 'needs_action', due: day(0) },
+    ];
+    $('shopping').items = items;
+    $('shopping').addEventListener('cw-todo', (e) => {
+      log('info', '買い物', `${e.detail.summary} を${e.detail.status === 'completed' ? '買った' : '戻した'}`);
+      items = items.map((i) => (i.uid === e.detail.uid ? { ...i, status: e.detail.status } : i));
+    });
+  }
+
+  // bold: floor plan, light chips and the flow diagram
+  const ICON = {
+    sun: 'M12 8a4 4 0 1 0 0.01 0M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+    grid: 'M12 2l-5 20M12 2l5 20M8 9h8M6.5 15h11',
+    batt: 'M5 7h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zM21 11v2',
+    home: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',
+  };
+  const chips = BOLD ? rooms.map((r) => {
+    const b = document.createElement('button');
+    b.append(document.createElement("i"), r.name);
+    b.addEventListener('click', () => toggle(r));
+    $('chips').append(b);
+    return b;
+  }) : [];
+  if (BOLD) {
+    $('plan').items = [{ x: .6, y: 2.6, w: 2.6, h: .9, z: .45 }, { x: 3.4, y: 1, w: 1.6, h: 1, z: .3 }, { x: 6.4, y: .3, w: 2.3, h: .7, z: .9 },
+      { x: 9.4, y: .4, w: 2, h: .8, z: .75 }, { x: .6, y: 5.2, w: 2.2, h: 2.2, z: .45 }, { x: 5.4, y: 5, w: 1, h: 2.4, z: .5 }];
+    $('plan').addEventListener('cw-room', (e) => toggle(rooms.find((r) => r.id === e.detail.id)));
+  }
+
+  function render() {
+    const lit = rooms.filter((r) => r.on);
+    rooms.forEach((r, i) => {
+      if (tiles[i]) {
+        tiles[i].p.label = r.name;
+        tiles[i].p.sublabel = `${r.temp.toFixed(1)} °C`;
+        tiles[i].p.on = r.on;
+        tiles[i].s.value = r.on ? Math.round(r.bri * 100) : 0;
+      }
+      if (chips[i]) { chips[i].setAttribute('aria-pressed', String(r.on)); chips[i].style.setProperty('--lamp', lamp(r)); }
+      switches[i].on = r.on;
+      switches[i].level = r.bri;
+      switches[i].color = lamp(r);
+    });
+    for (const [a, r] of areas) a.now = { temperature: r.temp, humidity: r.hum, lights: 1, lightsOn: r.on ? 1 : 0, motion: people.some((p) => p.room === r.id) };
+    $('avg-temp').value = rooms.reduce((n, r) => n + r.temp, 0) / rooms.length;
+    $('thermo').value = rooms[0].temp;
+    stage.lights = lit.map((r) => ({ color: lamp(r), level: r.bri }));
+
+    $('p-aoi').state = people[0].room ? 'online' : 'standby'; $('p-aoi').text = people[0].room ? '在宅' : '外出';
+    $('p-haru').state = people[1].room ? 'online' : 'standby'; $('p-haru').text = people[1].room ? '在宅' : '外出';
+    $('lock').state = sec.locked ? 'online' : 'offline'; $('lock').text = sec.locked ? '施錠' : '解錠'; $('lock').since = lastChanged;
+    $('window').state = sec.windowOpen ? 'offline' : 'online'; $('window').text = sec.windowOpen ? '開' : '閉';
+    $('camera').state = sec.camera; $('camera').text = sec.camera === 'online' ? '録画中' : '応答なし';
+    $('washer').state = washLeft() > 0 ? 'online' : 'standby'; $('washer').text = washLeft() > 0 ? `残り ${washLeft()} 分` : '待機';
+
+    const e = energyNow();
+    $('power-now').value = e.home;
+    $('e-solar').value = e.solar;
+    $('e-home').value = e.home;
+    $('e-batt').value = Math.round(battery);
+    $('e-chart').push({ 使用: e.home, 太陽光: e.solar });
+    if (!BOLD) {
+      $('e-grid').value = e.grid;
+      $('e-rooms').data = rooms.map((r) => ({ label: r.name, value: r.on ? Math.round(r.watts * r.bri) : 0 }));
+      return e;
+    }
+
+    $('ring').text = `HOME · ${lit.length} 部屋 点灯 · ${Math.round(e.home).toLocaleString()} W · ${lit.map((r) => r.name).join(' ') || '消灯'}`;
+    const plan = $('plan');
+    plan.rooms = rooms.map((r) => ({ id: r.id, name: r.name, x: r.x, y: r.y, w: r.w, h: r.h, on: r.on, color: lamp(r), level: r.bri, note: `${r.temp.toFixed(1)}°` }));
+    plan.people = people;
+    const f = lit.length ? lit[focusIdx % lit.length] : rooms[0];
+    plan.focus = f.id;
+    $('fc-name').textContent = f.name;
+    $('fc-bri').value = f.on ? Math.round(f.bri * 100) : 0;
+    $('fc-temp').value = f.temp;
+    $('fc-hum').value = f.hum;
+    $('fc-sw').style.background = f.on ? `linear-gradient(90deg, ${lamp(f)}, transparent)` : 'color-mix(in srgb, var(--cw-text) 15%, transparent)';
+    $('temps').data = rooms.map((r) => ({ label: r.name, value: r.temp }));
+
+    $('flow').nodes = [
+      { id: 'solar', label: '太陽光', value: e.solar, x: 0.5, y: 0.2, color: '#f0b45a', icon: ICON.sun },
+      { id: 'grid', label: '電力会社', value: Math.abs(e.grid), x: 0.17, y: 0.58, color: 'var(--cw-signal)', icon: ICON.grid },
+      { id: 'batt', label: '蓄電池', value: Math.round(battery), unit: '%', x: 0.83, y: 0.58, color: 'var(--cw-ok)', icon: ICON.batt },
+      { id: 'home', label: '家', value: e.home, x: 0.5, y: 0.76, icon: ICON.home },
+    ];
+    $('flow').links = [
+      { from: 'solar', to: 'home', value: Math.min(e.solar, e.home) },
+      { from: 'grid', to: 'home', value: Math.max(0, e.grid) },
+      { from: 'batt', to: 'home', value: Math.max(0, e.batt) },
+      { from: 'solar', to: 'batt', value: Math.max(0, -e.batt) },
+      { from: 'solar', to: 'grid', value: Math.max(0, -e.grid) },
+    ];
+    return e;
+  }
+
+  function tick() {
+    rooms.forEach((r) => { r.temp = Math.round((r.temp + (Math.random() - 0.5) * 0.2) * 10) / 10; });
+    const e = render();
+    battery = Math.max(10, Math.min(100, battery - e.batt / 4000));
+    if (Math.random() < 0.08) { people[1].room = people[1].room ? null : 'kitchen'; log('info', '在宅', `ハル が${people[1].room ? '帰宅' : '外出'}`); }
+  }
+
+  // first screen of history so the chart and log are not empty
+  const seed = energyNow();
+  for (let i = 0; i < 59; i++) $('e-chart').push({ 使用: seed.home + Math.round(Math.sin(i / 6) * 120), 太陽光: Math.max(0, seed.solar + Math.round(Math.cos(i / 9) * 150)) });
+  log('info', '在宅', 'アオイ が帰宅');
+  log('info', '照明', '居間 80% に変更');
+  log('warn', '窓', '寝室の窓が 20 分開いている');
+  log('info', '家電', '洗濯を始めた');
+  render();
+  $('ticker').push(['夜の窓辺 / Lumen Field を再生中', '外気 14.2 °C', '次のごみの日: 明日 燃えるごみ', 'ハル 19:30 ごろ帰宅の予定']);
+  if (!q.has('still')) setInterval(tick, 2000);
+
+  const screens = document.querySelector('cw-screens');
+  const mark = () => document.querySelectorAll('nav button').forEach((b) => b.setAttribute('aria-current', String(b.dataset.to === screens.current)));
+  // the screen last asked for: during a transition screens.current still names the old one
+  let chosen = 'home';
+  document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => screens.show(chosen = b.dataset.to)));
+  screens.addEventListener('cw-screen-change', (e) => { chosen = e.detail.to; mark(); });
+  screens.updateComplete.then(mark);
+  if (['energy', 'lights', 'cams', 'day'].includes(q.get('screen'))) screens.updateComplete.then(() => screens.show(chosen = q.get('screen')));
+
+  // bold in full motion: the focus moves to the next lit room, and the screens take turns; both wait while paused
+  const moving = () => BOLD && stage.dataset.motion === 'full' && !stage.paused && !q.has('still');
+  const every = (name, fallback) => Number(q.get(name)) || fallback;
+  setInterval(() => { if (moving()) { focusIdx++; render(); } }, every('focusms', 7000));
+  // the lighting and camera screens are opened to be used, so they stay until left
+  setInterval(() => { if (moving() && ['home', 'energy'].includes(chosen)) screens.show(chosen = chosen === 'home' ? 'energy' : 'home'); }, every('swapms', 24000));
+</script>
+</body>
+</html>

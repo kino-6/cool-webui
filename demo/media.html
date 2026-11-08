@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-media</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 48px; box-sizing: border-box; align-content: start; }
+  cw-panel { height: 220px; }
+  #loose { position: fixed; left: 16px; bottom: 16px; width: 420px; height: 130px; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="居間のスピーカー"><cw-media id="living"></cw-media></cw-panel>
+    <cw-panel label="寝室"><cw-media id="bed"></cw-media></cw-panel>
+  </div>
+</cw-stage>
+<cw-media id="loose" motion="full"></cw-media>
+<script>
+  const m = new URLSearchParams(location.search).get('motion');
+  if (m) document.querySelector('#board').setAttribute('motion', m);
+  document.getElementById('living').now = { title: '夜の窓辺', artist: 'Lumen Field', art: 'img/cover.svg', state: 'playing', position: 65, duration: 222, volume: 0.4 };
+  document.getElementById('bed').now = { state: 'idle' };
+  document.getElementById('loose').now = { title: 'Slow Tide', artist: 'Harbor Lights', state: 'playing', position: 10, duration: 180 };
+</script>
+</body>
+</html>

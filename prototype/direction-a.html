@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEMO — 夜の地形図</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#0b1220; --ground2:#0f1a2e; --fill:rgba(9,16,30,.66);
+  --ink:#dbe5f3; --dim:#7a8eac; --faint:#41536f;
+  --rule:rgba(150,180,220,.34); --rule2:rgba(150,180,220,.14);
+  --amber:#ffb547; --amber-d:rgba(255,181,71,.18); --cyan:#5ad1ff; --cyan-d:rgba(90,209,255,.16);
+  --mono:'IBM Plex Mono',ui-monospace,monospace; --jp:'IBM Plex Sans JP',sans-serif; --cond:'IBM Plex Sans Condensed','IBM Plex Sans JP',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--ground);color:var(--ink);font-family:var(--jp)}
+body.nobg,html.nobg{background:transparent}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+#bg{position:fixed;inset:0;width:100%;height:100%;display:block}
+#bgfall{position:fixed;inset:0;display:none;
+  background:radial-gradient(rgba(150,180,220,.16) 1px,transparent 1.4px) 0 0/28px 28px,
+             radial-gradient(120% 90% at 30% 20%,#13203a 0%,var(--ground) 60%,#070c16 100%)}
+.nogl #bgfall{display:block}
+.nobg #bg,.nobg #bgfall{display:none}
+
+/* 1600x900 の舞台 */
+#stage{position:fixed;left:50%;top:50%;width:1600px;height:900px;transform-origin:0 0}
+
+/* 余白の目盛りと座標 */
+.ruler{position:absolute;pointer-events:none;color:var(--faint);font:400 9px/1 var(--mono);letter-spacing:.08em}
+.ruler.t,.ruler.b{left:24px;right:24px;height:14px}
+.ruler.t{top:0;border-bottom:1px solid var(--rule2);
+  background:repeating-linear-gradient(90deg,var(--rule) 0 1px,transparent 1px 20px) 0 100%/100% 4px no-repeat,
+             repeating-linear-gradient(90deg,var(--rule) 0 1px,transparent 1px 100px) 0 100%/100% 9px no-repeat}
+.ruler.b{bottom:0;border-top:1px solid var(--rule2);
+  background:repeating-linear-gradient(90deg,var(--rule) 0 1px,transparent 1px 20px) 0 0/100% 4px no-repeat,
+             repeating-linear-gradient(90deg,var(--rule) 0 1px,transparent 1px 100px) 0 0/100% 9px no-repeat}
+.ruler.l,.ruler.r{top:24px;bottom:24px;width:14px}
+.ruler.l{left:0;border-right:1px solid var(--rule2);
+  background:repeating-linear-gradient(180deg,var(--rule) 0 1px,transparent 1px 20px) 100% 0/4px 100% no-repeat,
+             repeating-linear-gradient(180deg,var(--rule) 0 1px,transparent 1px 100px) 100% 0/9px 100% no-repeat}
+.ruler.r{right:0;border-left:1px solid var(--rule2);
+  background:repeating-linear-gradient(180deg,var(--rule) 0 1px,transparent 1px 20px) 0 0/4px 100% no-repeat,
+             repeating-linear-gradient(180deg,var(--rule) 0 1px,transparent 1px 100px) 0 0/9px 100% no-repeat}
+.ruler span{position:absolute}
+.ruler.t span{top:1px;transform:translateX(4px)}
+.ruler.b span{bottom:1px;transform:translateX(4px)}
+.ruler.l span{left:1px;transform:translateY(3px);font-size:8px}
+.ruler.r span{right:1px;transform:translateY(3px);font-size:8px}
+
+/* 見出しの帯 */
+#head{position:absolute;left:40px;right:40px;top:30px;height:50px;display:flex;align-items:center;gap:28px}
+#brand{display:flex;align-items:baseline;gap:14px}
+#brand b{font:700 30px/1 var(--cond);letter-spacing:.16em;color:var(--ink)}
+#brand span{font:500 11px/1.3 var(--mono);color:var(--dim);letter-spacing:.14em}
+#brand span em{font:500 11px var(--jp);font-style:normal;letter-spacing:.1em;display:block;color:var(--faint)}
+#coord{font:400 11px var(--mono);color:var(--dim);letter-spacing:.12em;display:flex;gap:18px;margin-left:auto}
+#coord i{font-style:normal;color:var(--cyan)}
+#motion{display:flex;align-items:center;gap:0;border:1px solid var(--rule);height:28px}
+#motion small{font:500 10px var(--mono);color:var(--dim);letter-spacing:.14em;padding:0 10px;border-right:1px solid var(--rule)}
+#motion button{all:unset;cursor:pointer;font:500 11px var(--mono);letter-spacing:.12em;color:var(--dim);padding:0 11px;height:100%;display:flex;align-items:center}
+#motion button+button{border-left:1px solid var(--rule2)}
+#motion button.on{color:var(--ground);background:var(--cyan)}
+
+/* パネル: 細い罫・角の十字・罫の上の見出し */
+.pn{position:absolute}
+.pn>.fill{position:absolute;inset:0;background:var(--fill)}
+.ln{position:absolute;background:var(--rule);display:block}
+.rt{position:absolute;left:0;right:0;top:0;height:0;display:flex;align-items:center}
+.rt .ln{position:static;height:1px;flex:none;width:14px}
+.rt .ln.f{flex:1}
+.lab{font:500 11px/1 var(--mono);letter-spacing:.16em;color:var(--cyan);padding:0 8px;white-space:nowrap;display:flex;gap:8px;align-items:baseline}
+.lab em{font:500 11px/1 var(--jp);font-style:normal;letter-spacing:.06em;color:var(--dim)}
+.ln.r{right:0;top:0;bottom:0;width:1px}
+.ln.b{left:0;right:0;bottom:0;height:1px}
+.ln.l{left:0;top:0;bottom:0;width:1px}
+.k{position:absolute;width:15px;height:15px;pointer-events:none}
+.k::before,.k::after{content:"";position:absolute;background:var(--ink);opacity:.8}
+.k::before{left:7px;top:0;width:1px;height:15px}
+.k::after{top:7px;left:0;height:1px;width:15px}
+.k.tl{left:-7px;top:-7px}.k.tr{right:-7px;top:-7px}.k.bl{left:-7px;bottom:-7px}.k.br{right:-7px;bottom:-7px}
+.bd{position:absolute;inset:0}
+
+/* 画面切り替え: 走査線が下りて、罫を順に引き直す */
+.page{position:absolute;inset:0;display:none}
+.page.active{display:block}
+.page.leave{display:block;animation:pgOut .18s ease-in forwards}
+@keyframes pgOut{to{opacity:0}}
+.draw .rt .ln{transform-origin:left;animation:sx .22s cubic-bezier(.3,.7,.2,1) both;animation-delay:calc(var(--i)*55ms + 120ms)}
+.draw .rt .ln.f{animation-delay:calc(var(--i)*55ms + 160ms)}
+.draw .ln.r{transform-origin:top;animation:sy .22s cubic-bezier(.3,.7,.2,1) both;animation-delay:calc(var(--i)*55ms + 330ms)}
+.draw .ln.b{transform-origin:right;animation:sx .22s cubic-bezier(.3,.7,.2,1) both;animation-delay:calc(var(--i)*55ms + 520ms)}
+.draw .ln.l{transform-origin:bottom;animation:sy .22s cubic-bezier(.3,.7,.2,1) both;animation-delay:calc(var(--i)*55ms + 700ms)}
+.draw .lab{animation:fi .2s both;animation-delay:calc(var(--i)*55ms + 140ms)}
+.draw .k{animation:kin .3s both;animation-delay:calc(var(--i)*55ms + 80ms)}
+.draw .fill{animation:fi .4s both;animation-delay:calc(var(--i)*55ms + 300ms)}
+.draw .bd,.draw .ttl{animation:fi .35s both;animation-delay:calc(var(--i)*55ms + 420ms)}
+@keyframes sx{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes sy{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+@keyframes kin{from{opacity:0;transform:scale(2.2)}to{opacity:1;transform:scale(1)}}
+#scan{position:absolute;left:0;right:0;top:0;height:90px;pointer-events:none;opacity:0;
+  background:linear-gradient(180deg,transparent 0,rgba(90,209,255,.05) 70%,rgba(90,209,255,.18) 98%,transparent 100%)}
+#scan::after{content:"";position:absolute;left:0;right:0;bottom:1px;height:1px;background:var(--cyan);box-shadow:0 0 12px 1px rgba(90,209,255,.7)}
+#scan::before{content:attr(data-y);position:absolute;right:30px;bottom:6px;font:500 10px var(--mono);color:var(--cyan);letter-spacing:.14em}
+#scan.go{animation:scan .62s cubic-bezier(.5,0,.5,1) forwards}
+@keyframes scan{0%{opacity:1;transform:translateY(-90px)}90%{opacity:1}100%{opacity:0;transform:translateY(900px)}}
+
+/* 動きの量 */
+.m-calm .loop,.m-off .loop{animation:none!important}
+.m-off *,.m-off *::before,.m-off *::after{animation:none!important;transition:none!important}
+
+/* 左の航路メニュー */
+#nav{left:40px;top:100px;width:184px;height:720px}
+#menu{list-style:none;position:absolute;left:0;right:0;top:24px}
+#menu li{position:relative;height:74px;padding:14px 0 0 22px;cursor:pointer;border-bottom:1px solid var(--rule2)}
+#menu li .ix{position:absolute;right:14px;top:16px;font:400 10px var(--mono);color:var(--faint);letter-spacing:.1em}
+#menu li b{display:block;font:600 19px/1 var(--cond);letter-spacing:.14em;color:var(--dim)}
+#menu li small{display:block;margin-top:7px;font:500 12px var(--jp);color:var(--faint);letter-spacing:.08em}
+#menu li::before{content:"";position:absolute;left:0;top:13px;bottom:13px;width:2px;background:var(--amber);transform:scaleY(0);transition:transform .2s}
+#menu li::after{content:"";position:absolute;left:8px;top:18px;width:6px;height:6px;border:1px solid var(--amber);transform:rotate(45deg) scale(0);transition:transform .2s}
+#menu li.on b{color:var(--amber)}
+#menu li.on small{color:var(--ink)}
+#menu li.on::before{transform:scaleY(1)}
+#menu li.on::after{transform:rotate(45deg) scale(1)}
+#menu li:hover b{color:var(--ink)}
+#menu li.on:hover b{color:var(--amber)}
+#navMeta{position:absolute;left:22px;right:16px;bottom:18px;font:400 11px/1.9 var(--mono);color:var(--dim)}
+#navMeta div{display:flex;justify-content:space-between;border-top:1px dashed var(--rule2)}
+#navMeta div:first-child{border-top:0}
+#navMeta b{font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* OVERVIEW */
+#hero{left:250px;top:100px;width:640px;height:280px}
+#hero .bd{padding:30px 0 0 30px}
+.lamp{display:inline-flex;align-items:center;gap:10px;font:500 11px var(--mono);letter-spacing:.16em;color:var(--dim)}
+.lamp i{width:8px;height:8px;background:var(--amber);border-radius:50%;box-shadow:0 0 0 3px var(--amber-d)}
+.lamp i.loop{animation:blink 2.4s ease-in-out infinite}
+@keyframes blink{50%{opacity:.25}}
+#state{font:700 128px/.86 var(--cond);letter-spacing:.01em;color:var(--amber);margin:16px 0 0 -6px}
+#upRow{display:flex;align-items:baseline;gap:16px;margin-top:22px}
+#upRow small{font:500 11px var(--mono);color:var(--cyan);letter-spacing:.16em}
+#upRow small em{font:500 11px var(--jp);font-style:normal;color:var(--dim);margin-left:6px;letter-spacing:.04em}
+#upt{font:400 40px/1 var(--mono);color:var(--ink);letter-spacing:.02em}
+.lamp span{margin-left:12px;padding-left:14px;border-left:1px solid var(--rule2)}
+.lamp b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+/* 高度計のような縦の目盛り帯 */
+#tape{position:absolute;right:22px;top:30px;bottom:34px;width:78px;overflow:hidden;border-left:1px solid var(--rule2)}
+#tapeStrip{position:absolute;left:0;top:0;width:100%;height:880px;transition:transform .9s cubic-bezier(.3,.7,.2,1);
+  background:repeating-linear-gradient(180deg,var(--rule) 0 1px,transparent 1px 20px) 0 0/10px 100% no-repeat,
+             repeating-linear-gradient(180deg,var(--ink) 0 1px,transparent 1px 100px) 0 0/18px 100% no-repeat}
+#tapeStrip span{position:absolute;left:24px;font:400 11px var(--mono);color:var(--dim);transform:translateY(-6px)}
+#tapePtr{position:absolute;left:0;right:0;top:50%;height:26px;margin-top:-13px;border:1px solid var(--amber);border-left:0;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;background:var(--ground)}
+#tapePtr::before{content:"";position:absolute;left:-1px;top:50%;width:10px;height:1px;background:var(--amber)}
+#tapePtr b{font:500 14px var(--mono);color:var(--amber);font-variant-numeric:tabular-nums}
+#tapeCap{position:absolute;right:22px;bottom:14px;width:78px;text-align:right;font:500 9px var(--mono);color:var(--faint);letter-spacing:.12em}
+
+#stats{left:910px;top:100px;width:380px;height:280px}
+#stats .bd{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.cell{position:relative;padding:20px 18px 0 20px}
+.cell:nth-child(odd){border-right:1px solid var(--rule2)}
+.cell:nth-child(-n+2){border-bottom:1px solid var(--rule2)}
+.cell h4{font:500 10px var(--mono);letter-spacing:.16em;color:var(--cyan)}
+.cell h4 em{display:block;font:500 11px var(--jp);font-style:normal;color:var(--dim);letter-spacing:.04em;margin-top:4px}
+.cell .v{font:400 44px/1 var(--mono);color:var(--amber);margin-top:12px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.cell .v u{text-decoration:none;font-size:14px;color:var(--dim);margin-left:4px;letter-spacing:.06em}
+.scale{position:absolute;left:20px;right:18px;bottom:16px;height:8px;
+  background:repeating-linear-gradient(90deg,var(--rule) 0 1px,transparent 1px 10%) 0 100%/100% 5px no-repeat;border-bottom:1px solid var(--rule)}
+.scale i{position:absolute;left:0;bottom:-1px;width:1px;height:12px;background:var(--amber);transition:transform .6s cubic-bezier(.3,.7,.2,1)}
+#cross{position:absolute;left:50%;top:50%;width:15px;height:15px;margin:-7px 0 0 -7px}
+
+#clock{left:1310px;top:100px;width:250px;height:110px}
+#clock .bd{padding:28px 20px 0 20px}
+#ct{font:300 38px/1 var(--mono);color:var(--ink);font-variant-numeric:tabular-nums}
+#cd{margin-top:10px;font:400 11px var(--mono);color:var(--dim);letter-spacing:.12em;display:flex;justify-content:space-between}
+#cd b{color:var(--cyan);font-weight:500}
+
+#lanes{left:1310px;top:230px;width:250px;height:150px}
+#lanes .bd{padding:24px 16px 0 18px;display:flex;flex-direction:column;gap:8px}
+.lane{display:grid;grid-template-columns:34px 1fr 26px;align-items:center;gap:8px;height:16px}
+.lane b{font:500 12px var(--jp);color:var(--ink)}
+.lane span{position:relative;height:6px;background:repeating-linear-gradient(90deg,var(--rule2) 0 1px,transparent 1px 10%);border-left:1px solid var(--rule)}
+.lane span i{position:absolute;inset:0;background:var(--cyan);transform-origin:left;transform:scaleX(var(--w,0));transition:transform .6s cubic-bezier(.3,.7,.2,1)}
+.lane.top span i{background:var(--amber)}
+.lane em{font:400 11px var(--mono);font-style:normal;color:var(--dim);text-align:right;font-variant-numeric:tabular-nums}
+
+#chart{left:250px;top:400px;width:640px;height:250px}
+#chart svg{position:absolute;left:52px;top:34px;width:530px;height:186px;overflow:visible}
+#legend{position:absolute;right:20px;top:-6px;display:flex;gap:16px;font:500 10px var(--mono);letter-spacing:.12em;color:var(--dim);padding:0 6px;background:transparent}
+#legend i{display:inline-block;width:18px;height:0;border-top:2px solid var(--amber);vertical-align:middle;margin-right:6px}
+#legend i.d{border-top:1px dashed var(--cyan)}
+
+#chat{left:250px;top:670px;width:640px;height:150px}
+#talk{position:absolute;left:20px;right:20px;top:20px;bottom:10px;overflow:hidden}
+#talk div{display:grid;grid-template-columns:62px 70px 1fr;align-items:baseline;height:30px;border-bottom:1px dashed var(--rule2);padding-top:7px}
+#talk div small{font:400 11px var(--mono);color:var(--faint)}
+#talk div b{font:700 13px var(--jp);color:var(--cyan)}
+#talk div.me b{color:var(--amber)}
+#talk div span{font:400 14px var(--jp);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#talk div.new{animation:fi .4s both}
+
+#logp{left:910px;top:400px;width:650px;height:420px}
+#loghd,#log div{display:grid;grid-template-columns:96px 44px 108px 1fr;gap:10px;padding:0 20px}
+#loghd{position:absolute;left:0;right:0;top:20px;font:500 10px var(--mono);color:var(--faint);letter-spacing:.14em;padding-bottom:6px;border-bottom:1px solid var(--rule2)}
+#log{position:absolute;left:0;right:0;top:44px;bottom:12px;overflow:hidden;
+  -webkit-mask-image:linear-gradient(180deg,#000 75%,transparent);mask-image:linear-gradient(180deg,#000 75%,transparent)}
+#log div{font:400 12px/18px var(--mono);color:var(--dim);white-space:nowrap;font-variant-numeric:tabular-nums}
+#log div span:nth-child(3){color:var(--ink)}
+#log div span:nth-child(4){overflow:hidden;text-overflow:ellipsis}
+#log .I{color:var(--cyan)}
+#log .W{color:var(--amber)}
+#log .E{color:var(--ground);background:var(--amber);text-align:center;font-weight:600}
+#log div.new{animation:fi .35s both}
+
+#tickp{left:250px;top:842px;width:1310px;height:28px;overflow:hidden;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+#tickp em{position:absolute;left:0;top:0;bottom:0;width:84px;display:flex;align-items:center;justify-content:center;font:500 10px var(--mono);font-style:normal;letter-spacing:.16em;color:var(--ground);background:var(--cyan);z-index:1}
+#tick{position:absolute;left:96px;top:0;height:100%;display:flex;align-items:center;white-space:nowrap;font:400 12px var(--mono);color:var(--dim);letter-spacing:.06em}
+#tick.loop{animation:tk 60s linear infinite}
+#tick b{color:var(--amber);font-weight:500;margin:0 10px 0 28px}
+@keyframes tk{to{transform:translateX(-50%)}}
+
+/* 概要以外の画面 */
+.ttl{position:absolute;left:250px;top:96px}
+.ttl .ix{font:500 12px var(--mono);color:var(--amber);letter-spacing:.2em}
+.ttl h1{font:700 150px/.9 var(--cond);color:var(--ink);letter-spacing:.02em;margin-top:8px}
+.ttl h2{font:500 22px var(--jp);color:var(--dim);letter-spacing:.12em;margin-top:12px}
+.kv{padding:30px 24px 0}
+.kv div{display:flex;justify-content:space-between;align-items:baseline;height:40px;border-bottom:1px dashed var(--rule2);font:500 13px var(--jp);color:var(--dim)}
+.kv div b{font:400 20px var(--mono);color:var(--amber);font-variant-numeric:tabular-nums}
+.kv div b.c{color:var(--cyan)}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div id="bgfall"></div>
+
+<div id="stage">
+  <div class="ruler t" id="rt"></div><div class="ruler b" id="rb"></div>
+  <div class="ruler l" id="rl"></div><div class="ruler r" id="rr"></div>
+
+  <header id="head">
+    <div id="brand"><b>DEMO</b><span>VOICE AGENT / CONTROL<em>音声 AI ボットの管制盤</em></span></div>
+    <div id="coord"><span>LAT <i>35°39′29″N</i></span><span>LON <i>139°41′52″E</i></span><span>NODE <i>ap-ne-1</i></span></div>
+    <div id="motion" role="group" aria-label="動きの量"><small>MOTION</small>
+      <button data-m="full">FULL</button><button data-m="calm">CALM</button><button data-m="off">OFF</button></div>
+  </header>
+
+  <nav class="pn" id="nav" data-l="ROUTE" data-s="航路" style="--i:0">
+    <ul id="menu">
+      <li><b>OVERVIEW</b><small>概要</small><span class="ix">01</span></li>
+      <li><b>BOT</b><small>Bot</small><span class="ix">02</span></li>
+      <li><b>SESSIONS</b><small>会話</small><span class="ix">03</span></li>
+      <li><b>CONSOLE</b><small>ログ</small><span class="ix">04</span></li>
+      <li><b>METRICS</b><small>計測</small><span class="ix">05</span></li>
+    </ul>
+    <div id="navMeta">
+      <div>GUILD<b>#雑談部屋</b></div>
+      <div>SHARD<b>0 / 1</b></div>
+      <div>PING<b id="ping">42 ms</b></div>
+      <div>BUILD<b>v0.9.3</b></div>
+    </div>
+  </nav>
+
+  <section class="page" data-name="overview">
+    <div class="pn" id="hero" data-l="STATUS" data-s="状態" style="--i:1">
+      <div class="bd">
+        <div class="lamp"><i class="loop"></i>LIVE<span>SESSION <b>#1208</b></span><span>MEMBERS <b>4</b></span><span>CALLS/MIN <b id="cpm">34</b></span></div>
+        <div id="state">ONLINE</div>
+        <div id="upRow"><small>UPTIME<em>稼働時間</em></small><span id="upt" class="num">00:00:00</span></div>
+        <div id="tape"><div id="tapeStrip"></div><div id="tapePtr"><b id="tapeV">2300</b></div></div>
+        <div id="tapeCap">P50 · ms</div>
+      </div>
+    </div>
+
+    <div class="pn" id="stats" data-l="READOUT" data-s="応答の計器" style="--i:2">
+      <div class="bd">
+        <div class="cell"><h4>FIRST · P50<em>初回応答 中央値</em></h4><div class="v"><span id="s1">2.3</span><u>s</u></div><div class="scale"><i id="g1"></i></div></div>
+        <div class="cell"><h4>FIRST · P95<em>初回応答 95%</em></h4><div class="v"><span id="s2">3.1</span><u>s</u></div><div class="scale"><i id="g2"></i></div></div>
+        <div class="cell"><h4>ASR<em>音声認識</em></h4><div class="v"><span id="s3">760</span><u>ms</u></div><div class="scale"><i id="g3"></i></div></div>
+        <div class="cell"><h4>TOKENS / S<em>生成速度</em></h4><div class="v"><span id="s4">60.2</span><u>t/s</u></div><div class="scale"><i id="g4"></i></div></div>
+        <span class="k" id="cross"></span>
+      </div>
+    </div>
+
+    <div class="pn" id="clock" data-l="LOCAL" data-s="現地時刻" style="--i:3">
+      <div class="bd"><div id="ct" class="num">00:00:00</div><div id="cd"><span id="cdd">----.--.--</span><b id="cdw">---</b><span>JST +09</span></div></div>
+    </div>
+
+    <div class="pn" id="lanes" data-l="LANES" data-s="処理の内訳" style="--i:4"><div class="bd" id="laneBd"></div></div>
+
+    <div class="pn" id="chart" data-l="RESPONSE" data-s="応答時間 直近120" style="--i:5">
+      <div id="legend"><span><i></i>P50</span><span><i class="d"></i>P95</span></div>
+      <div class="bd"><svg id="lineChart" viewBox="0 0 530 186" fill="none"></svg></div>
+    </div>
+
+    <div class="pn" id="chat" data-l="NOW TALKING" data-s="いまの会話" style="--i:6"><div class="bd"><div id="talk"></div></div></div>
+
+    <div class="pn" id="logp" data-l="EVENT LOG" data-s="出来事の記録" style="--i:7">
+      <div class="bd"><div id="loghd"><span>TIME</span><span>LVL</span><span>EVENT</span><span>PARAMS</span></div><div id="log"></div></div>
+    </div>
+
+    <div class="pn" id="tickp" style="--i:8"><em>FEED</em><div class="bd"><div id="tick" class="loop"></div></div></div>
+  </section>
+
+  <section class="page" data-name="bot"></section>
+  <section class="page" data-name="sessions"></section>
+  <section class="page" data-name="console"></section>
+  <section class="page" data-name="metrics"></section>
+
+  <div id="scan" data-y=""></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const Q = new URLSearchParams(location.search);
+const pick = a => a[Math.random() * a.length | 0], rnd = (a, b) => a + Math.random() * (b - a);
+const pad = n => String(n).padStart(2, '0');
+const now = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; };
+
+/* ---------- 透明モード ---------- */
+if (Q.get('bg') === 'none') { document.documentElement.classList.add('nobg'); document.body.classList.add('nobg'); }
+
+/* ---------- 舞台の拡大縮小 ---------- */
+const stage = $('stage');
+const fit = () => { const s = Math.min(innerWidth / 1600, innerHeight / 900);
+  stage.style.transform = `scale(${s}) translate(-50%,-50%)`; };
+addEventListener('resize', fit); fit();
+
+/* ---------- 余白の目盛りの数字 ---------- */
+$('rt').innerHTML = $('rb').innerHTML = Array.from({ length: 16 }, (_, i) => `<span style="left:${i * 100}px">${String(i * 100).padStart(4, '0')}</span>`).join('');
+$('rl').innerHTML = $('rr').innerHTML = Array.from({ length: 9 }, (_, i) => `<span style="top:${i * 100}px">${String(i * 100).padStart(3, '0')}</span>`).join('');
+
+/* ---------- パネルの罫と角の十字を足す ---------- */
+document.querySelectorAll('.pn').forEach(pn => {
+  const lab = pn.dataset.l ? `<b class="lab">${pn.dataset.l}<em>${pn.dataset.s || ''}</em></b>` : '';
+  pn.insertAdjacentHTML('afterbegin', `<div class="fill"></div>`);
+  pn.insertAdjacentHTML('beforeend', `<div class="rt"><i class="ln"></i>${lab}<i class="ln f"></i></div><i class="ln r"></i><i class="ln b"></i><i class="ln l"></i>`
+    + ['tl', 'tr', 'bl', 'br'].map(c => `<span class="k ${c}"></span>`).join(''));
+});
+
+/* ---------- 概要以外の画面（大見出しと仮の値） ---------- */
+const sub = {
+  bot: ['02', 'BOT', 'Bot の設定', [['音声モデル', 'ja-JP / v3', 1], ['声', 'demo-soft', 1], ['反応の間', '0.40 s'], ['割り込みの許可', 'ON', 1], ['記憶の保持', '30 日']]],
+  sessions: ['03', 'SESSIONS', '会話の履歴', [['今日の会話', '18'], ['平均の長さ', '01:12'], ['話した人', '11', 1], ['最長', '02:41'], ['失敗', '0', 1]]],
+  console: ['04', 'CONSOLE', '記録の閲覧', [['1 分あたり', '124'], ['WARN', '7'], ['ERR', '1'], ['保存先', 'local/ring', 1], ['保持', '50,000 行', 1]]],
+  metrics: ['05', 'METRICS', '計測', [['P50', '2.3 s'], ['P95', '3.1 s'], ['ASR', '760 ms'], ['生成速度', '60.2 t/s'], ['成功率', '99.4 %', 1]]]
+};
+for (const [name, [ix, en, jp, rows]] of Object.entries(sub)) {
+  const pg = document.querySelector(`.page[data-name="${name}"]`);
+  pg.innerHTML = `<div class="ttl" style="--i:1"><div class="ix">${ix} / 05 — SECTOR</div><h1>${en}</h1><h2>${jp}</h2></div>`
+    + `<div class="pn" style="left:250px;top:380px;width:640px;height:440px;--i:2" data-l="SUMMARY" data-s="要約"><div class="bd kv">${rows.map(([k, v, c]) => `<div>${k}<b class="${c ? 'c' : ''}">${v}</b></div>`).join('')}</div></div>`
+    + `<div class="pn" style="left:910px;top:100px;width:650px;height:720px;--i:3" data-l="DETAIL" data-s="詳細"><div class="bd" style="display:flex;align-items:center;justify-content:center;font:500 12px var(--mono);letter-spacing:.2em;color:var(--faint)">NO DATA IN DEMO · 見本ではここは空です</div></div>`;
+  pg.querySelectorAll('.pn').forEach(pn => {
+    pn.insertAdjacentHTML('afterbegin', `<div class="fill"></div>`);
+    pn.insertAdjacentHTML('beforeend', `<div class="rt"><i class="ln"></i><b class="lab">${pn.dataset.l}<em>${pn.dataset.s}</em></b><i class="ln f"></i></div><i class="ln r"></i><i class="ln b"></i><i class="ln l"></i>`
+      + ['tl', 'tr', 'bl', 'br'].map(c => `<span class="k ${c}"></span>`).join(''));
+  });
+}
+
+/* ---------- 動きの量 ---------- */
+let motion = Q.get('motion');
+if (!['full', 'calm', 'off'].includes(motion)) motion = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'calm' : 'full';
+const motionBtns = [...document.querySelectorAll('#motion button')];
+function setMotion(m) {
+  motion = m;
+  document.body.classList.remove('m-full', 'm-calm', 'm-off');
+  document.body.classList.add('m-' + m);
+  motionBtns.forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  startBg();
+}
+motionBtns.forEach(b => b.onclick = () => setMotion(b.dataset.m));
+
+/* ---------- 背景: 流れる等高線（WebGL2） ---------- */
+const cv = $('bg');
+const gl = Q.get('bg') === 'none' ? null : cv.getContext('webgl2', { antialias: false, premultipliedAlpha: false });
+let raf = 0, drawBg = null;
+if (gl) {
+  const vs = `#version 300 es
+  in vec2 p; void main(){ gl_Position = vec4(p,0,1); }`;
+  const fs = `#version 300 es
+  precision highp float;
+  uniform vec2 R; uniform float T;
+  out vec4 o;
+  float h(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
+  float n(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
+    return mix(mix(h(i),h(i+vec2(1,0)),f.x), mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x), f.y); }
+  float fbm(vec2 p){ float v=0., a=.5; mat2 r=mat2(.8,.6,-.6,.8);
+    for(int i=0;i<5;i++){ v+=a*n(p); p=r*p*2.03; a*=.5; } return v; }
+  float iso(float k){ float d = abs(fract(k) - .5); float w = fwidth(k); return smoothstep(.5 - w*1.2, .5, d); }
+  void main(){
+    vec2 uv = gl_FragCoord.xy / R;
+    vec2 p = gl_FragCoord.xy / R.y * 2.6;
+    float t = T * .015;
+    float f = fbm(p + vec2(t, t*.6)) + .35*fbm(p*1.7 - vec2(t*.8, -t*.4) + 4.1);
+    float k = f * 16.;
+    float minor = iso(k);
+    float major = iso(k / 5.);
+    vec3 col = mix(vec3(.043,.071,.125), vec3(.058,.094,.165), smoothstep(.2,.9,1.-uv.y));
+    float hi = smoothstep(.95, 1.2, f);
+    vec3 lineC = mix(vec3(.35,.82,1.), vec3(1.,.71,.28), hi);
+    col += lineC * (minor * .07 + major * .2);
+    vec2 g = mod(gl_FragCoord.xy, 28.) - 14.;
+    col += vec3(.55,.68,.85) * (1. - smoothstep(.6, 1.4, length(g))) * .09;
+    col *= .82 + .18 * smoothstep(1.1, .25, length(uv - vec2(.45,.55)));
+    o = vec4(col, 1);
+  }`;
+  const sh = (t, s) => { const x = gl.createShader(t); gl.shaderSource(x, s); gl.compileShader(x); return x; };
+  const pr = gl.createProgram();
+  gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(pr);
+  if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) document.documentElement.classList.add('nogl');
+  gl.useProgram(pr);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+  const uR = gl.getUniformLocation(pr, 'R'), uT = gl.getUniformLocation(pr, 'T');
+  const tBase = 400 + Math.random() * 200;
+  drawBg = ts => {
+    const w = innerWidth, hh = innerHeight;
+    if (cv.width !== w || cv.height !== hh) { cv.width = w; cv.height = hh; gl.viewport(0, 0, w, hh); }
+    gl.uniform2f(uR, w, hh); gl.uniform1f(uT, tBase + ts / 1000);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  };
+  addEventListener('resize', () => { if (motion !== 'full') drawBg(performance.now()); });
+} else if (Q.get('bg') !== 'none') document.documentElement.classList.add('nogl');
+
+/* full は 30fps で描き続け、calm と off は 1 枚だけ描いて止める */
+function startBg() {
+  cancelAnimationFrame(raf); raf = 0;
+  if (!drawBg) return;
+  drawBg(performance.now());
+  if (motion !== 'full') return;
+  let last = 0;
+  const loop = ts => { if (ts - last > 33) { last = ts; drawBg(ts); } raf = requestAnimationFrame(loop); };
+  raf = requestAnimationFrame(loop);
+}
+
+/* ---------- 画面の切り替え ---------- */
+const pages = [...document.querySelectorAll('.page')], items = [...document.querySelectorAll('#menu li')];
+let cur = -1;
+function draw(el) { el.classList.remove('draw'); void el.offsetWidth; el.classList.add('draw'); }
+function go(i) {
+  if (i === cur) return;
+  const old = pages[cur];
+  cur = i;
+  items.forEach((li, k) => li.classList.toggle('on', k === i));
+  history.replaceState(null, '', location.search + '#' + pages[i].dataset.name);
+  if (motion === 'off') { if (old) old.classList.remove('active'); pages[i].classList.add('active'); return; }
+  if (old) { old.classList.remove('active'); old.classList.add('leave'); setTimeout(() => old.classList.remove('leave'), 180); }
+  const sc = $('scan'); sc.dataset.y = `SCAN ${pages[i].dataset.name.toUpperCase()} · SECTOR 0${i + 1}`;
+  sc.classList.remove('go'); void sc.offsetWidth; sc.classList.add('go');
+  setTimeout(() => { if (cur !== i) return; pages[i].classList.add('active'); draw(pages[i]); }, old ? 140 : 60);
+}
+items.forEach((li, k) => li.onclick = () => go(k));
+addEventListener('keydown', e => { if (e.key >= '1' && e.key <= '5') go(+e.key - 1); });
+
+/* ---------- 仮のデータ ---------- */
+const people = ['ミナモ', 'さくら', 'ハル', 'ユズ', 'ミナト'];
+const lines = ['最近なに観てます？', '古いほうの映画が好きです', 'それ、ちょっと気になりますね', '週末、鍋しない？', '駅前のパン屋また行きたい',
+  '昨日の配信見た？', 'あの曲ずっと聴いてる', 'ミナモ、今日の天気どう？', '夕方から雨みたいですよ', '引っ越しの手伝い、誰か来れる？', '豆乳鍋に一票です', 'ゲームの続きやろう'];
+const evTypes = ['LLM_CALL', 'SPEAK', 'HEARD', 'OFFER', 'REFLECT', 'WANT', 'WRITE_CHECK', 'SPEAK_END', 'VAD', 'TTS'];
+const laneNames = ['会話', '想起', '検索', '記憶', '裏'];
+$('laneBd').innerHTML = laneNames.map(n => `<div class="lane"><b>${n}</b><span><i></i></span><em>0</em></div>`).join('');
+const laneEls = [...document.querySelectorAll('.lane')];
+
+const talk = $('talk');
+function say(init) {
+  const who = pick(people), me = who === 'ミナモ' ? 'me' : '';
+  talk.insertAdjacentHTML('afterbegin', `<div class="${me} ${init ? '' : 'new'}"><small>${now()}</small><b>${who}</b><span>${pick(lines)}</span></div>`);
+  while (talk.children.length > 4) talk.lastChild.remove();
+}
+for (let i = 0; i < 4; i++) say(true);
+
+const logEl = $('log');
+function logLine(init) {
+  const t = pick(evTypes), lv = Math.random() < .04 ? 'E' : Math.random() < .08 ? 'W' : 'I';
+  const body = t === 'LLM_CALL' ? `lane=${pick(['conversation', 'recall', 'search', 'memory'])} ms=${rnd(800, 3500) | 0} tok=${rnd(900, 3400) | 0}/${rnd(40, 400) | 0}`
+    : t === 'SPEAK' ? `chars=${rnd(8, 40) | 0} first_say_ms=${rnd(500, 900) | 0}` : t === 'HEARD' ? `speaker=${pick(people.slice(1))} asr_ms=${rnd(120, 800) | 0}`
+    : `items=${rnd(0, 4) | 0} decision=d${rnd(100, 200) | 0}`;
+  logEl.insertAdjacentHTML('afterbegin', `<div class="${init ? '' : 'new'}"><span>${now()}.${pad(rnd(0, 99) | 0)}</span><span class="${lv}">${{ I: 'INFO', W: 'WARN', E: 'ERR' }[lv]}</span><span>${t}</span><span>${body}</span></div>`);
+  while (logEl.children.length > 24) logEl.lastChild.remove();
+}
+for (let i = 0; i < 24; i++) logLine(true);
+
+/* 応答時間の折れ線 */
+const p50 = [2.3]; for (let i = 1; i < 120; i++) p50.push(Math.min(3, Math.max(1.6, p50[i - 1] + rnd(-.22, .22))));
+const p95 = p50.map(v => v + rnd(.45, .9));
+const W = 530, H = 186, yOf = v => (H - v / 4.5 * H).toFixed(1), xOf = i => (i / 119 * W).toFixed(1);
+function renderChart() {
+  const pts = a => a.map((v, i) => `${xOf(i)},${yOf(v)}`).join(' ');
+  const grid = [0, 1, 2, 3, 4].map(v => `<line x1="0" x2="${W}" y1="${yOf(v)}" y2="${yOf(v)}" stroke="#96b4dc" stroke-opacity="${v ? .14 : .34}" stroke-dasharray="${v ? '1 4' : ''}"/>`
+    + `<text x="-12" y="${+yOf(v) + 3}" text-anchor="end" font-size="10" font-family="IBM Plex Mono" fill="#7a8eac">${v.toFixed(1)}s</text>`).join('')
+    + [0, 30, 60, 90, 119].map(i => `<line x1="${xOf(i)}" x2="${xOf(i)}" y1="${H}" y2="${H + 5}" stroke="#96b4dc" stroke-opacity=".5"/>`
+    + `<text x="${xOf(i)}" y="${H + 17}" text-anchor="middle" font-size="9" font-family="IBM Plex Mono" fill="#41536f">${i === 119 ? 'NOW' : '−' + (119 - i) + 's'}</text>`).join('');
+  const lx = xOf(119), ly = yOf(p50[119]), ly2 = yOf(p95[119]);
+  lineChart.innerHTML = grid
+    + `<polyline points="${pts(p95)}" stroke="#5ad1ff" stroke-width="1" stroke-dasharray="3 3" stroke-opacity=".9"/>`
+    + `<polyline points="${pts(p50)}" stroke="#ffb547" stroke-width="1.6"/>`
+    + `<line x1="0" x2="${W}" y1="${ly}" y2="${ly}" stroke="#ffb547" stroke-opacity=".25"/>`
+    + `<line x1="${lx}" x2="${lx}" y1="0" y2="${H}" stroke="#dbe5f3" stroke-opacity=".25"/>`
+    + `<path d="M${lx - 6} ${ly}h12M${lx} ${+ly - 6}v12" stroke="#ffb547"/>`
+    + `<text x="${+lx + 8}" y="${+ly + 4}" font-size="11" font-family="IBM Plex Mono" fill="#ffb547">${p50[119].toFixed(2)}</text>`
+    + `<text x="${+lx + 8}" y="${+ly2 + 4}" font-size="10" font-family="IBM Plex Mono" fill="#5ad1ff">${p95[119].toFixed(2)}</text>`;
+}
+const lineChart = $('lineChart');
+
+/* 高度計の目盛り帯: 0〜4000ms、1px = 5ms */
+$('tapeStrip').innerHTML = Array.from({ length: 9 }, (_, i) => `<span style="top:${i * 100}px">${i * 500}</span>`).join('');
+const setTape = ms => { const c = $('tape').clientHeight / 2; $('tapeStrip').style.transform = `translateY(${(c - ms / 5).toFixed(1)}px)`; $('tapeV').textContent = ms; };
+/* 目盛りは上が小さい値。針の位置に今の値が来るように帯を動かす */
+
+/* ---------- 毎秒の更新 ---------- */
+const t0 = Date.now(), WD = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const hms = s => `${pad(s / 3600 | 0)}:${pad(s / 60 % 60 | 0)}:${pad(s % 60 | 0)}`;
+const gauge = (id, v, lo, hi) => $(id).style.transform = `translateX(${(Math.min(1, Math.max(0, (v - lo) / (hi - lo))) * ($(id).parentNode.clientWidth - 1)).toFixed(1)}px)`;
+function tick() {
+  const d = new Date(), up = 4335 + (Date.now() - t0) / 1000;
+  $('ct').textContent = now();
+  $('cdd').textContent = `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`;
+  $('cdw').textContent = WD[d.getDay()];
+  $('upt').textContent = hms(up);
+  $('cpm').textContent = rnd(30, 40) | 0;
+  $('ping').textContent = (rnd(36, 58) | 0) + ' ms';
+  p50.shift(); p50.push(Math.min(3, Math.max(1.6, p50[118] + rnd(-.22, .22)))); p95.shift(); p95.push(p50[119] + rnd(.45, .9));
+  const a = p50[119], b = p95[119], asr = rnd(700, 820) | 0, tps = rnd(55, 65);
+  $('s1').textContent = a.toFixed(1); gauge('g1', a, 0, 4);
+  $('s2').textContent = b.toFixed(1); gauge('g2', b, 0, 4);
+  $('s3').textContent = asr; gauge('g3', asr, 0, 1000);
+  $('s4').textContent = tps.toFixed(1); gauge('g4', tps, 0, 100);
+  setTape(Math.round(a * 1000));
+  const vals = laneNames.map(() => rnd(5, 50) | 0), mx = Math.max(...vals);
+  laneEls.forEach((l, i) => { l.classList.toggle('top', vals[i] === mx); l.querySelector('i').style.setProperty('--w', vals[i] / 50); l.querySelector('em').textContent = vals[i]; });
+  renderChart();
+}
+
+const tickLine = () => Array.from({ length: 8 }, () => `<b>■</b>${now()} ${pick(evTypes)} lane=${pick(['conversation', 'recall', 'memory'])} ms=${rnd(500, 3000) | 0}`).join('');
+const fillTick = () => { const s = tickLine(); $('tick').innerHTML = s + s; };
+
+setMotion(motion);
+go(Math.max(0, pages.findIndex(p => '#' + p.dataset.name === location.hash)));
+tick(); fillTick();
+setInterval(tick, 1000);
+setInterval(() => logLine(false), 500);
+setInterval(() => say(false), 2500);
+setInterval(() => { if (motion !== 'full') fillTick(); }, 8000);
+</script>
+</body>
+</html>

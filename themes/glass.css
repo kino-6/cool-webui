@@ -1,0 +1,21 @@
+/* Glass look (ha-look.md candidate 2): frosted panels over a deep blue ground, Hanken Grotesk. */
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500&display=swap');
+
+:root {
+  --cw-ground: linear-gradient(180deg, #02060B 0%, #0E1A24 100%);
+  --cw-ground-solid: #02060B;
+  --cw-surface: rgba(255, 255, 255, 0.06);
+  --cw-surface-on: rgba(122, 162, 190, 0.22);
+  --cw-text-on: #EAEBEE;
+  --cw-border: 0.5px solid rgba(234, 235, 238, 0.22);
+  --cw-radius: 20px;
+  --cw-blur: blur(12px) saturate(1.2);
+  --cw-well: rgba(0, 0, 0, 0.25);
+  --cw-text: #EAEBEE;
+  --cw-text-dim: #9AA6B2;
+  --cw-signal: #7AA2BE;
+  --cw-ok: #80C994;
+  --cw-warn: #F0B45A;
+  --cw-font: 'Hanken Grotesk', 'Noto Sans JP', system-ui, sans-serif;
+  --cw-background-kind: plain;
+}

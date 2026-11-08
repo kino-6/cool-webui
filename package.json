@@ -1,0 +1,19 @@
+{
+  "name": "cool-webui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Custom-element dashboard parts for Home Assistant and plain HTML",
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "test": "node tools/test_components.mjs all",
+    "machine": "node tools/machine-feed.mjs"
+  },
+  "dependencies": {
+    "lit": "3.3.3"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "puppeteer-core": "25.13.0"
+  }
+}

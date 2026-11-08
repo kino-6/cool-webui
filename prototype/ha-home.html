@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="ja" data-look="tile" data-variant="quiet" data-ready="0" data-frames="0" data-aura="0">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home — Wall Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Hanken+Grotesk:wght@300;400;500;600&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* 候補1 静かな暗いタイル（docs/research/ha-look.md） */
+:root {
+  --ground: #121212; --surface: #1d1d1d; --line: rgba(255,255,255,.06); --line-w: 1px;
+  --text: #e8e8e8; --dim: #8b8b8b; --accent: #4a90c2;
+  --ok: #80c994; --warn: #fcd663; --bad: #f18b82;
+  --on-bg: rgba(255,255,255,.85); --on-text: #121212;
+  --radius: 16px; --font: 'Inter', 'Noto Sans JP', sans-serif;
+  --blur: none; --floor: #262626; --wall: #303030; --wall-top: #3a3a3a;
+}
+/* 候補2 写真とすりガラス */
+[data-look="glass"] {
+  --ground: #02060b; --surface: rgba(255,255,255,.06); --line: rgba(234,235,238,.22); --line-w: .5px;
+  --text: #eaebee; --dim: rgba(234,235,238,.56); --accent: #7aa2be;
+  --ok: #8fd0a8; --warn: #f0b45a; --bad: #e8908a;
+  --on-bg: rgba(255,255,255,.2); --on-text: #ffffff;
+  --radius: 20px; --font: 'Hanken Grotesk', 'Noto Sans JP', sans-serif;
+  --blur: blur(12px) saturate(1.2); --floor: rgba(160,190,215,.10); --wall: rgba(160,190,215,.16); --wall-top: rgba(200,220,240,.28);
+}
+[data-bg="none"] { --ground: transparent; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--ground); }
+body { font-family: var(--font); color: var(--text); -webkit-font-smoothing: antialiased; }
+[data-bg="none"] body { background: transparent; }
+
+#stage { position: absolute; left: 0; top: 0; width: 1600px; height: 900px; transform-origin: 0 0; overflow: hidden; }
+#photo { position: absolute; inset: 0; display: none; }
+[data-look="glass"] #photo { display: block;
+  background:
+    radial-gradient(520px 380px at 78% 24%, rgba(255,186,110,.30), transparent 70%),
+    radial-gradient(640px 460px at 18% 82%, rgba(70,130,170,.35), transparent 70%),
+    radial-gradient(900px 600px at 55% 60%, rgba(30,60,90,.55), transparent 75%),
+    linear-gradient(180deg, #02060b 0%, #0e1a24 100%); }
+[data-look="glass"][data-bg="none"] #photo { display: none; }
+#aura { position: absolute; inset: 0; width: 1600px; height: 900px; display: none; }
+[data-variant="bold"] #aura { display: block; }
+[data-bg="none"] #aura { display: none; }
+
+.card { position: absolute; background: var(--surface); border: var(--line-w) solid var(--line);
+  border-radius: var(--radius); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+  padding: 22px 24px; transition: background .15s, color .15s, box-shadow .6s, transform .15s; }
+.label { font-size: 13px; font-weight: 500; color: var(--dim); letter-spacing: .02em; }
+.big { font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.row { display: flex; align-items: center; gap: 10px; }
+.unit { font-size: .45em; color: var(--dim); margin-left: 4px; font-weight: 400; }
+.pill { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 15px;
+  background: rgba(255,255,255,.06); font-size: 13px; font-weight: 500; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
+.ico { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  background: rgba(255,255,255,.07); color: var(--dim); transition: background .15s, color .15s; }
+.ico svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+.press:active { transform: scale(.96); }
+
+/* left rail */
+#clock { left: 32px; top: 32px; width: 320px; height: 236px; }
+#clock .time { font-size: 86px; line-height: 1; margin-top: 6px; }
+#clock .date { margin-top: 10px; font-size: 15px; color: var(--dim); }
+#clock .wx { margin-top: 22px; display: flex; align-items: baseline; gap: 12px; font-size: 15px; }
+#clock .wx b { font-size: 30px; font-weight: 500; }
+#people { left: 32px; top: 292px; width: 320px; height: 132px; }
+#people .list { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+#people .who { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+#people .who .where { margin-left: auto; color: var(--dim); font-size: 13px; }
+.avatar { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #121212; }
+#nav { left: 32px; top: 448px; width: 320px; height: 176px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+#nav button { height: 70px; border-radius: calc(var(--radius) - 6px); display: flex; align-items: center; gap: 14px; padding: 0 14px; font-size: 17px; font-weight: 500; text-align: left; }
+#nav button.on { background: var(--on-bg); color: var(--on-text); }
+#nav button.on .ico { background: var(--accent); color: #fff; }
+#switch { left: 32px; top: 648px; width: 320px; height: 220px; display: flex; flex-direction: column; gap: 12px; }
+.seg { display: flex; background: rgba(255,255,255,.05); border-radius: 12px; padding: 4px; }
+.seg a { flex: 1; text-align: center; height: 38px; line-height: 38px; border-radius: 9px; font-size: 14px; font-weight: 500; color: var(--dim); text-decoration: none; }
+.seg a.on { background: var(--accent); color: #fff; }
+
+/* screens */
+.screen { position: absolute; left: 376px; top: 32px; width: 1192px; height: 836px; }
+.screen[hidden] { display: none; }
+
+/* quiet home: room tiles */
+.tile { width: 380px; height: 170px; display: flex; flex-direction: column; justify-content: space-between; text-align: left; }
+.tile .name { font-size: 18px; font-weight: 600; }
+.tile .state { font-size: 14px; color: var(--dim); margin-top: 2px; }
+.tile .meta { display: flex; gap: 18px; font-size: 14px; color: var(--dim); }
+.tile .meta b { color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; }
+.tile.on { background: var(--on-bg); color: var(--on-text); }
+.tile.on .state, .tile.on .meta, .tile.on .meta b { color: var(--on-text); }
+.tile.on .ico { background: var(--lamp); color: #121212; }
+.tile .bar { height: 4px; border-radius: 2px; background: rgba(127,127,127,.25); overflow: hidden; }
+.tile .bar i { display: block; height: 100%; background: var(--lamp, var(--accent)); border-radius: 2px; transition: width .4s; }
+
+#climate .now { font-size: 56px; margin-top: 10px; }
+#climate .set { margin-top: 18px; display: flex; align-items: center; gap: 14px; }
+#climate .set button { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,.07); font-size: 22px; }
+#climate .set .target { font-size: 26px; font-weight: 500; min-width: 90px; text-align: center; }
+#media .title { font-size: 22px; font-weight: 600; margin-top: 16px; }
+#media .artist { font-size: 15px; color: var(--dim); margin-top: 4px; }
+#media .prog { margin-top: 22px; height: 4px; border-radius: 2px; background: rgba(127,127,127,.25); }
+#media .prog i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 2px; }
+#media .times { display: flex; justify-content: space-between; font-size: 12px; color: var(--dim); margin-top: 8px; font-variant-numeric: tabular-nums; }
+.eq { display: none; gap: 3px; height: 22px; align-items: flex-end; margin-left: auto; }
+[data-variant="bold"] .eq { display: flex; }
+.eq i { width: 4px; background: var(--accent); border-radius: 2px; height: 30%; }
+#security .items { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+#security .it { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+#security .it small { display: block; color: var(--dim); font-size: 12px; }
+#log .lines { margin-top: 10px; font-size: 14px; display: flex; flex-direction: column; gap: 7px; }
+#log .lines div { display: flex; gap: 14px; }
+#plan .lines { position: absolute; left: 24px; bottom: 18px; font-size: 13px; display: flex; flex-direction: column; gap: 5px; color: var(--dim); }
+#plan .lines div { display: flex; gap: 12px; }
+#log .lines span:first-child, #plan .lines span:first-child { color: var(--dim); font-variant-numeric: tabular-nums; width: 44px; flex: none; }
+
+/* bold home */
+#plan { padding: 0; overflow: hidden; }
+#plan svg { position: absolute; inset: 0; }
+#plan .label { position: absolute; left: 24px; top: 20px; }
+.room-floor { transition: fill .6s; cursor: pointer; }
+.glow { mix-blend-mode: screen; transition: opacity .8s; }
+.fixture { transition: fill .6s; }
+.rname { font-size: 13px; font-weight: 600; fill: var(--text); pointer-events: none; }
+.rtemp { font-size: 12px; fill: var(--dim); pointer-events: none; font-variant-numeric: tabular-nums; }
+.focus-line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-dasharray: 10 8; }
+.person { transition: transform 2.4s cubic-bezier(.45,0,.2,1); }
+#focus .rn { font-size: 30px; font-weight: 600; margin-top: 10px; }
+#focus .kv { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+#focus .kv div { font-size: 13px; color: var(--dim); }
+#focus .kv b { display: block; font-size: 30px; color: var(--text); font-weight: 500; margin-top: 4px; }
+#focus .swatch { height: 10px; border-radius: 5px; margin-top: 22px; transition: background .6s; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.chips .pill { transition: box-shadow .6s, background .6s; cursor: pointer; }
+
+/* energy */
+#flow svg { position: absolute; inset: 0; }
+.node-c { fill: var(--surface); stroke: var(--line); }
+[data-look="tile"] .node-c { fill: #262626; }
+.node-t { font-size: 14px; fill: var(--dim); text-anchor: middle; }
+.node-v { font-size: 26px; font-weight: 500; fill: var(--text); text-anchor: middle; font-variant-numeric: tabular-nums; }
+.wire { fill: none; stroke: rgba(127,127,127,.28); stroke-width: 3; }
+#chart .bars { position: absolute; left: 24px; right: 24px; bottom: 44px; top: 70px; display: flex; align-items: flex-end; gap: 8px; }
+#chart .bars i { flex: 1; border-radius: 4px 4px 0 0; background: rgba(127,127,127,.3); transition: height .6s; position: relative; }
+#chart .bars i.s { background: var(--warn); opacity: .8; }
+#chart .bars i.now { background: var(--accent); opacity: 1; }
+#chart .hours { position: absolute; left: 24px; right: 24px; bottom: 16px; display: flex; font-size: 11px; color: var(--dim); }
+#chart .hours span { flex: 1; text-align: center; }
+.stat .v { font-size: 64px; margin-top: 8px; }
+[data-variant="bold"] .stat .v { font-size: 70px; margin-top: 2px; }
+[data-variant="bold"] .stat .sub { margin-top: 0; }
+.stat .sub { font-size: 14px; color: var(--dim); margin-top: 6px; }
+
+/* rolling digits (bold only) */
+.roll { display: inline-block; height: 1.15em; line-height: 1.15em; overflow: hidden; vertical-align: -0.2em; }
+.roll .col { display: block; transition: transform .7s cubic-bezier(.2,.8,.2,1); }
+.roll .col span { display: block; height: 1.15em; text-align: center; }
+
+/* bold extras */
+[data-variant="bold"] #clock .time { font-size: 84px; font-weight: 300; margin-top: 0; }
+[data-variant="bold"] #clock .date { margin-top: 4px; }
+[data-variant="bold"] #clock .wx { margin-top: 12px; }
+#clock .time { white-space: nowrap; }
+[data-variant="bold"] .tile.on, [data-variant="bold"] .chips .pill.on { box-shadow: 0 0 46px -6px var(--lamp); }
+#wipe { position: absolute; inset: 0; pointer-events: none; z-index: 50; opacity: 0; }
+[data-motion="off"] *, [data-motion="off"] *::before { transition: none !important; animation: none !important; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="photo"></div>
+  <canvas id="aura" width="800" height="450"></canvas>
+
+  <section class="card" id="clock">
+    <div class="label">ホーム</div>
+    <div class="time big" id="time">00:00</div>
+    <div class="date" id="date"></div>
+    <div class="wx"><b id="wx-t">18°</b><span id="wx-c">くもり</span><span style="color:var(--dim)" id="wx-r">最高 21° / 最低 13°</span></div>
+  </section>
+
+  <section class="card" id="people">
+    <div class="label">在宅</div>
+    <div class="list" id="people-list"></div>
+  </section>
+
+  <nav class="card" id="nav">
+    <button class="press on" data-go="home"><span class="ico" data-i="home"></span>ホーム</button>
+    <button class="press" data-go="energy"><span class="ico" data-i="bolt"></span>エネルギー</button>
+  </nav>
+
+  <section class="card" id="switch">
+    <div class="label">見た目</div>
+    <div class="seg" id="seg-look"></div>
+    <div class="label">動き</div>
+    <div class="seg" id="seg-variant"></div>
+  </section>
+
+  <div class="screen" id="screen-home"></div>
+  <div class="screen" id="screen-energy" hidden></div>
+  <canvas id="wipe" width="1600" height="900"></canvas>
+</div>
+
+<script>
+const Q = new URLSearchParams(location.search);
+const LOOK = Q.get('look') === 'glass' ? 'glass' : 'tile';
+const BOLD = Q.get('variant') === 'bold';
+const MOTION = Q.get('motion') === 'off' ? 'off' : (BOLD ? 'full' : 'calm');
+const root = document.documentElement;
+root.dataset.look = LOOK; root.dataset.variant = BOLD ? 'bold' : 'quiet'; root.dataset.motion = MOTION;
+if (Q.get('bg') === 'none') root.dataset.bg = 'none';
+const MOVE = MOTION === 'full';
+const $ = (s, el = document) => el.querySelector(s);
+
+/* ---------- stage scaling ---------- */
+const stage = $('#stage');
+function fit() {
+  const k = Math.min(innerWidth / 1600, innerHeight / 900);
+  stage.style.transform = `translate(${(innerWidth - 1600 * k) / 2}px, ${(innerHeight - 900 * k) / 2}px) scale(${k})`;
+}
+addEventListener('resize', fit); fit();
+
+/* ---------- icons ---------- */
+const ICON = {
+  home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  bolt: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+  bulb: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/>',
+  thermo: '<path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  window: '<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M12 3v18M4 12h16"/>',
+  cam: '<rect x="3" y="7" width="13" height="10" rx="2"/><path d="M16 11l5-3v8l-5-3"/>',
+  wash: '<rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6h2"/>',
+  play: '<path d="M7 4l13 8-13 8z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  grid: '<path d="M12 2l-5 20M12 2l5 20M8 9h8M6.5 15h11"/>',
+  batt: '<rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 11v2"/>',
+};
+const ico = (n) => `<svg viewBox="0 0 24 24">${ICON[n]}</svg>`;
+document.querySelectorAll('[data-i]').forEach(e => e.innerHTML = ico(e.dataset.i));
+
+/* ---------- switches ---------- */
+function seg(id, key, opts, cur) {
+  $(id).innerHTML = opts.map(([v, t]) => {
+    const q = new URLSearchParams(location.search); q.set(key, v);
+    return `<a href="?${q}" class="${v === cur ? 'on' : ''}">${t}</a>`;
+  }).join('');
+}
+seg('#seg-look', 'look', [['tile', 'タイル'], ['glass', 'ガラス']], LOOK);
+seg('#seg-variant', 'variant', [['quiet', '静か'], ['bold', '派手']], BOLD ? 'bold' : 'quiet');
+
+/* ---------- numbers: still or rolling ---------- */
+function put(el, str) {
+  if (!el) return;
+  str = String(str);
+  if (!BOLD) { el.textContent = str; return; }
+  if (el.dataset.shape !== str.replace(/\d/g, '0')) {
+    el.dataset.shape = str.replace(/\d/g, '0');
+    el.innerHTML = [...str].map(c => /\d/.test(c)
+      ? `<span class="roll"><span class="col">${'0123456789'.split('').map(d => `<span>${d}</span>`).join('')}</span></span>`
+      : `<span>${c}</span>`).join('');
+  }
+  const cols = el.querySelectorAll('.col');
+  let i = 0;
+  for (const c of str) if (/\d/.test(c)) cols[i++].style.transform = `translateY(${-Number(c) * 10}%)`;
+}
+
+/* ---------- simulated home ---------- */
+const rooms = [
+  { id: 'living',   name: 'リビング', x: 0, y: 0,   w: 6, h: 4.5, on: true,  hue: 36,  bri: .85, temp: 22.4, hum: 47 },
+  { id: 'kitchen',  name: 'キッチン', x: 6, y: 0,   w: 3, h: 4.5, on: true,  hue: 48,  bri: .6,  temp: 23.1, hum: 52 },
+  { id: 'study',    name: '書斎',     x: 9, y: 0,   w: 3, h: 4.5, on: false, hue: 205, bri: .7,  temp: 21.0, hum: 44 },
+  { id: 'bedroom',  name: '寝室',     x: 0, y: 4.5, w: 5, h: 3.5, on: true,  hue: 275, bri: .35, temp: 20.6, hum: 50 },
+  { id: 'bath',     name: '浴室',     x: 5, y: 4.5, w: 3, h: 3.5, on: false, hue: 190, bri: .9,  temp: 24.8, hum: 71 },
+  { id: 'entrance', name: '玄関',     x: 8, y: 4.5, w: 4, h: 3.5, on: false, hue: 30,  bri: .5,  temp: 19.2, hum: 46 },
+];
+const lamp = r => `hsl(${r.hue} 90% 62%)`;
+const people = [
+  { name: 'アオイ', color: '#9cc9ef', room: 'living' },
+  { name: 'ハル',   color: '#f2c38b', room: null },
+];
+const climate = { target: 24.0, mode: '暖房' };
+const media = { title: '夜の窓辺', artist: 'Lumen Field', len: 214, pos: 63 };
+const sec = { lock: true, window: false, motion: false, wash: 12 };
+const energy = { battery: 64 };
+const log = [];
+function addLog(text) {
+  const d = new Date();
+  log.unshift([`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`, text]);
+  log.length = Math.min(log.length, 6);
+}
+addLog('リビングの照明を点けました'); addLog('玄関の鍵を閉めました'); addLog('寝室を夜の明かりにしました');
+
+function solarNow() { const d = new Date(), h = d.getHours() + d.getMinutes() / 60; return Math.max(0, Math.sin((h - 6) / 12 * Math.PI)) * 3200; }
+function energyNow() {
+  const lights = rooms.reduce((s, r) => s + (r.on ? 9 + r.bri * 30 : 0), 0);
+  const home = 380 + lights + 620 + Math.sin(Date.now() / 7000) * 60;
+  const solar = solarNow();
+  let batt = 0;
+  if (solar > home) batt = -Math.min(1500, solar - home);        // charging
+  else if (energy.battery > 15) batt = Math.min(900, home - solar); // discharging
+  const grid = home - solar - batt;
+  return { home, solar, batt, grid };
+}
+
+/* ---------- views ---------- */
+const H = $('#screen-home'), E = $('#screen-energy');
+const card = (id, x, y, w, h, inner, cls = '') => `<section class="card ${cls}" id="${id}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">${inner}</section>`;
+
+const climateCard = (x, y, w, h) => card('climate', x, y, w, h, `
+  <div class="row"><span class="ico">${ico('thermo')}</span><div><div class="label">エアコン</div><div style="font-size:14px;margin-top:2px" id="cl-mode"></div></div></div>
+  <div class="now big"><span id="cl-now"></span><span class="unit">°C</span></div>
+  <div class="set"><button class="press" data-t="-1">−</button><div class="target big" id="cl-target"></div><button class="press" data-t="1">＋</button><span class="label" style="margin-left:auto">設定</span></div>`);
+const mediaCard = (x, y, w, h) => card('media', x, y, w, h, `
+  <div class="row"><span class="ico">${ico('play')}</span><div class="label">再生中 · リビングのスピーカー</div><div class="eq" id="eq">${'<i></i>'.repeat(7)}</div></div>
+  <div class="title" id="md-title"></div><div class="artist" id="md-artist"></div>
+  <div class="prog"><i id="md-prog"></i></div><div class="times"><span id="md-pos"></span><span id="md-len"></span></div>`);
+const securityCard = (x, y, w, h) => card('security', x, y, w, h, `
+  <div class="label">防犯と家事</div>
+  <div class="items">
+    <div class="it"><span class="ico" id="sc-lock-i">${ico('lock')}</span><div>玄関の鍵<small id="sc-lock"></small></div></div>
+    <div class="it"><span class="ico" id="sc-win-i">${ico('window')}</span><div>窓<small id="sc-win"></small></div></div>
+    <div class="it"><span class="ico" id="sc-cam-i">${ico('cam')}</span><div>庭のカメラ<small id="sc-cam"></small></div></div>
+    <div class="it"><span class="ico" id="sc-wash-i">${ico('wash')}</span><div>洗濯機<small id="sc-wash"></small></div></div>
+  </div>`);
+const logCard = (x, y, w, h) => card('log', x, y, w, h, `<div class="label">出来事</div><div class="lines" id="log-lines"></div>`);
+
+function buildHome() {
+  if (!BOLD) {
+    H.innerHTML = rooms.map((r, i) => card(`tile-${r.id}`, (i % 3) * 406, Math.floor(i / 3) * 196, 380, 170, `
+      <div class="row"><span class="ico">${ico('bulb')}</span><div><div class="name">${r.name}</div><div class="state" data-st></div></div></div>
+      <div class="bar"><i data-bar></i></div>
+      <div class="meta"><span>室温 <b data-temp></b></span><span>湿度 <b data-hum></b></span></div>`, 'tile press'))
+      .join('')
+      + climateCard(0, 392, 380, 250) + mediaCard(406, 392, 380, 250) + securityCard(812, 392, 380, 250)
+      + logCard(0, 668, 1192, 168);
+    rooms.forEach(r => $(`#tile-${r.id}`).addEventListener('click', () => toggle(r)));
+  } else {
+    H.innerHTML = card('plan', 0, 0, 770, 560, `<div class="label">家のようす</div><svg id="plan-svg" viewBox="0 0 770 560"></svg><div class="lines" id="log-lines"></div>`)
+      + card('focus', 796, 0, 396, 270, `<div class="label" id="fc-label">注目の部屋</div><div class="rn" id="fc-name"></div>
+          <div class="kv"><div>明るさ<b><span id="fc-bri"></span><span class="unit">%</span></b></div><div>室温<b><span id="fc-temp"></span><span class="unit">°</span></b></div><div>湿度<b><span id="fc-hum"></span><span class="unit">%</span></b></div></div>
+          <div class="swatch" id="fc-sw"></div>`)
+      + climateCard(796, 296, 396, 264)
+      + mediaCard(0, 586, 380, 250)
+      + card('rooms', 406, 586, 380, 250, `<div class="label">照明</div><div class="chips" id="chips">${rooms.map(r => `<span class="pill" data-room="${r.id}"><span class="dot"></span>${r.name}</span>`).join('')}</div>`)
+      + securityCard(812, 586, 380, 250);
+    document.querySelectorAll('#chips .pill').forEach(p => p.addEventListener('click', () => toggle(rooms.find(r => r.id === p.dataset.room))));
+    buildPlan();
+  }
+  H.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => { climate.target = Math.round((climate.target + b.dataset.t * .5) * 10) / 10; render(); }));
+}
+
+function buildEnergy() {
+  E.innerHTML = card('flow', 0, 0, 770, 560, `<div class="label">電気の流れ</div><svg id="flow-svg" viewBox="0 0 770 560"></svg>`)
+    + card('st-home', 796, 0, 396, 176, `<div class="label">家で使っている電力</div><div class="v big"><span id="e-home"></span><span class="unit">W</span></div>`, 'stat')
+    + card('st-solar', 796, 192, 396, 176, `<div class="label">太陽光</div><div class="v big"><span id="e-solar"></span><span class="unit">W</span></div><div class="sub" id="e-solar-s"></div>`, 'stat')
+    + card('st-batt', 796, 384, 396, 176, `<div class="label">蓄電池</div><div class="v big"><span id="e-batt"></span><span class="unit">%</span></div><div class="sub" id="e-batt-s"></div>`, 'stat')
+    + card('chart', 0, 586, 1192, 250, `<div class="label">今日の使用量（1 時間ごと、黄色は太陽光でまかなえた時間）</div><div class="bars" id="bars"></div><div class="hours">${Array.from({ length: 24 }, (_, h) => `<span>${h % 3 === 0 ? h : ''}</span>`).join('')}</div>`);
+  const N = { solar: [385, 120], grid: [130, 330], batt: [640, 330], home: [385, 430] };
+  const wires = [['solar', 'home', 'M385 168 L385 382'], ['grid', 'home', 'M178 340 C 260 360, 300 420, 337 428'], ['batt', 'home', 'M592 340 C 510 360, 470 420, 433 428'], ['solar', 'batt', 'M425 145 C 540 170, 620 230, 636 282']];
+  const svg = $('#flow-svg');
+  svg.innerHTML = wires.map(([a, b, d], i) => `<path class="wire" id="w${i}" d="${d}"/>`).join('')
+    + '<g id="sparks"></g>'
+    + Object.entries(N).map(([k, [x, y]]) => `<g transform="translate(${x} ${y})"><circle class="node-c" r="48" stroke-width="1.5"/>
+        <g transform="translate(-12 -40)" style="color:var(--dim)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[k === 'home' ? 'home' : k === 'batt' ? 'batt' : k === 'grid' ? 'grid' : 'sun']}</svg></g>
+        <text class="node-v" y="20" id="n-${k}"></text><text class="node-t" y="74">${{ solar: '太陽光', grid: '電力会社', batt: '蓄電池', home: '家' }[k]}</text></g>`).join('');
+  E._wires = wires.map((w, i) => ({ el: $(`#w${i}`, svg), from: w[0], to: w[1] }));
+  const hour = new Date().getHours();
+  $('#bars').innerHTML = Array.from({ length: 24 }, (_, h) => {
+    const use = 0.25 + 0.35 * Math.exp(-((h - 8) ** 2) / 6) + 0.55 * Math.exp(-((h - 19.5) ** 2) / 5) + ((h * 37) % 10) / 100;
+    const sunny = h >= 9 && h <= 15;
+    return `<i class="${h === hour ? 'now' : sunny ? 's' : ''}" style="height:${h > hour ? 4 : Math.round(use * 100)}%"></i>`;
+  }).join('');
+}
+
+/* ---------- isometric floor plan (bold) ---------- */
+const S = 44, OX = 330, OY = 96;
+const iso = (x, y, z = 0) => [OX + (x - y) * S * .866, OY + (x + y) * S * .5 - z * S];
+const pts = a => a.map(p => p.join(',')).join(' ');
+const quad = (x, y, w, h, z = 0) => pts([iso(x, y, z), iso(x + w, y, z), iso(x + w, y + h, z), iso(x, y + h, z)]);
+function wallX(x0, x1, y, z0, z1) { return pts([iso(x0, y, z0), iso(x1, y, z0), iso(x1, y, z1), iso(x0, y, z1)]); }
+function wallY(y0, y1, x, z0, z1) { return pts([iso(x, y0, z0), iso(x, y1, z0), iso(x, y1, z1), iso(x, y0, z1)]); }
+function box(x, y, w, h, z, fill) {
+  return `<polygon points="${wallX(x, x + w, y + h, 0, z)}" fill="${fill}" opacity=".75"/>`
+    + `<polygon points="${wallY(y, y + h, x + w, 0, z)}" fill="${fill}" opacity=".55"/>`
+    + `<polygon points="${quad(x, y, w, h, z)}" fill="${fill}"/>`;
+}
+function buildPlan() {
+  const svg = $('#plan-svg');
+  let s = `<defs><filter id="bloom" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="26"/></filter></defs>`;
+  s += `<polygon points="${wallX(0, 12, 8, -.28, 0)}" fill="var(--wall)"/><polygon points="${wallY(0, 8, 12, -.28, 0)}" fill="var(--wall)" opacity=".7"/>`;
+  s += rooms.map(r => `<polygon class="room-floor" data-room="${r.id}" points="${quad(r.x, r.y, r.w, r.h)}" fill="var(--floor)" stroke="var(--line)"/>`).join('');
+  s += `<g id="glows">${rooms.map(r => { const [cx, cy] = iso(r.x + r.w / 2, r.y + r.h / 2); return `<ellipse class="glow" data-room="${r.id}" cx="${cx}" cy="${cy}" rx="${(r.w + r.h) * 15}" ry="${(r.w + r.h) * 8}" filter="url(#bloom)"/>`; }).join('')}</g>`;
+  const furn = 'var(--wall-top)';
+  s += box(.6, 2.6, 2.6, .9, .45, furn) + box(3.4, 1.0, 1.6, 1.0, .3, furn) + box(6.4, .3, 2.3, .7, .9, furn) + box(6.9, 2.2, 1.4, 1.2, .75, furn)
+     + box(9.4, .4, 2.0, .8, .75, furn) + box(.6, 5.2, 2.2, 2.2, .45, furn) + box(5.4, 5.0, 1.0, 2.4, .5, furn) + box(10.6, 6.6, 1.0, .9, .9, furn);
+  s += `<polygon points="${wallX(0, 12, 0, 0, 1.5)}" fill="var(--wall)"/><polygon points="${wallX(0, 12, 0, 1.5, 1.6)}" fill="var(--wall-top)"/>`;
+  s += `<polygon points="${wallY(0, 8, 0, 0, 1.5)}" fill="var(--wall)" opacity=".8"/><polygon points="${wallY(0, 8, 0, 1.5, 1.6)}" fill="var(--wall-top)"/>`;
+  s += [[6, 0, 4.5], [9, 0, 4.5], [5, 4.5, 8], [8, 4.5, 8]].map(([x, y0, y1]) => `<polygon points="${wallY(y0, y1, x, 0, .5)}" fill="var(--wall)" opacity=".9"/>`).join('');
+  s += `<polygon points="${wallX(0, 12, 4.5, 0, .5)}" fill="var(--wall)" opacity=".9"/>`;
+  s += rooms.map(r => { const [cx, cy] = iso(r.x + r.w / 2, r.y + r.h / 2, .02); return `<circle class="fixture" data-room="${r.id}" cx="${cx}" cy="${cy}" r="5"/>`; }).join('');
+  s += `<polygon id="focus-line" class="focus-line" points=""/>`;
+  s += rooms.map(r => { const [lx, ly] = iso(r.x + .35, r.y + r.h - .4); return `<text class="rname" x="${lx}" y="${ly}">${r.name}</text><text class="rtemp" data-temp="${r.id}" x="${lx}" y="${ly + 16}"></text>`; }).join('');
+  s += people.map((p, i) => `<g class="person" id="p${i}"><circle r="13" fill="${p.color}"/><text y="4.5" text-anchor="middle" font-size="12" font-weight="700" fill="#121212">${p.name[0]}</text></g>`).join('');
+  svg.innerHTML = s;
+  svg.querySelectorAll('.room-floor').forEach(f => f.addEventListener('click', () => toggle(rooms.find(r => r.id === f.dataset.room))));
+}
+let focusIdx = 0;
+
+/* ---------- render ---------- */
+function toggle(r) { r.on = !r.on; addLog(`${r.name}の照明を${r.on ? '点け' : '消し'}ました`); render(); }
+const fmtT = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+function render() {
+  const d = new Date();
+  put($('#time'), `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`);
+  $('#date').textContent = `${d.getMonth() + 1}月${d.getDate()}日 ${'日月火水木金土'[d.getDay()]}曜日`;
+  $('#people-list').innerHTML = people.map(p => `<div class="who"><span class="avatar" style="background:${p.color}">${p.name[0]}</span>${p.name}<span class="where">${p.room ? '在宅 · ' + rooms.find(r => r.id === p.room).name : '外出中'}</span></div>`).join('');
+
+  rooms.forEach(r => {
+    const t = $(`#tile-${r.id}`);
+    if (t) {
+      t.classList.toggle('on', r.on); t.style.setProperty('--lamp', lamp(r));
+      $('[data-st]', t).textContent = r.on ? `点灯 · ${Math.round(r.bri * 100)}%` : '消灯';
+      $('[data-bar]', t).style.width = r.on ? `${r.bri * 100}%` : '0%';
+      $('[data-temp]', t).textContent = `${r.temp.toFixed(1)}°`; $('[data-hum]', t).textContent = `${r.hum}%`;
+    }
+    const g = $(`.glow[data-room="${r.id}"]`);
+    if (g) {
+      g.setAttribute('fill', lamp(r)); g.style.opacity = r.on ? .25 + r.bri * .6 : 0;
+      $(`.room-floor[data-room="${r.id}"]`).setAttribute('fill', r.on ? `hsl(${r.hue} 70% ${LOOK === 'tile' ? 22 + r.bri * 14 : 30 + r.bri * 14}% / ${LOOK === 'tile' ? 1 : .55})` : 'var(--floor)');
+      $(`.fixture[data-room="${r.id}"]`).setAttribute('fill', r.on ? lamp(r) : 'var(--dim)');
+      $(`[data-temp="${r.id}"]`).textContent = `${r.temp.toFixed(1)}°`;
+    }
+    const chip = $(`#chips [data-room="${r.id}"]`);
+    if (chip) { chip.classList.toggle('on', r.on); chip.style.setProperty('--lamp', lamp(r)); $('.dot', chip).style.background = r.on ? lamp(r) : ''; }
+  });
+  people.forEach((p, i) => {
+    const g = $(`#p${i}`); if (!g) return;
+    const r = rooms.find(x => x.id === p.room);
+    const [x, y] = r ? iso(r.x + r.w * (.62 + i * .1), r.y + r.h * (.38 + i * .12), .3) : iso(12.9, 7.2, .3);
+    g.setAttribute('transform', `translate(${x} ${y})`); g.style.opacity = r ? 1 : .35;
+  });
+
+  const lit = rooms.filter(r => r.on);
+  if (BOLD && $('#fc-name')) {
+    const r = lit.length ? lit[focusIdx % lit.length] : rooms[0];
+    $('#fc-name').textContent = r.name;
+    put($('#fc-bri'), r.on ? Math.round(r.bri * 100) : 0); put($('#fc-temp'), r.temp.toFixed(1)); put($('#fc-hum'), r.hum);
+    $('#fc-sw').style.background = r.on ? `linear-gradient(90deg, ${lamp(r)}, transparent)` : 'rgba(127,127,127,.2)';
+    $('#focus-line').setAttribute('points', quad(r.x + .08, r.y + .08, r.w - .16, r.h - .16, .01));
+  }
+
+  if ($('#cl-now')) {
+    put($('#cl-now'), rooms[0].temp.toFixed(1)); $('#cl-target').textContent = `${climate.target.toFixed(1)}°`;
+    $('#cl-mode').textContent = `${climate.mode} · リビング`;
+    $('#md-title').textContent = media.title; $('#md-artist').textContent = media.artist;
+    $('#md-prog').style.width = `${media.pos / media.len * 100}%`; $('#md-pos').textContent = fmtT(media.pos); $('#md-len').textContent = fmtT(media.len);
+    const st = (id, text, good) => { $(`#sc-${id}`).textContent = text; $(`#sc-${id}-i`).style.color = good ? 'var(--ok)' : 'var(--warn)'; };
+    if ($('#security')) { st('lock', sec.lock ? '施錠中' : '開いています', sec.lock); st('win', sec.window ? '1 か所開いています' : 'すべて閉', !sec.window);
+    st('cam', sec.motion ? '動きを検知' : '動きなし', !sec.motion); st('wash', sec.wash > 0 ? `残り ${sec.wash} 分` : '終わりました', sec.wash > 0); }
+    $('#log-lines').innerHTML = log.slice(0, BOLD ? 3 : 4).map(([t, x]) => `<div><span>${t}</span><span>${x}</span></div>`).join('');
+  }
+
+  const e = energyNow();
+  if ($('#e-home')) {
+    put($('#e-home'), Math.round(e.home).toLocaleString());
+    put($('#e-solar'), Math.round(e.solar).toLocaleString());
+    $('#e-solar-s').textContent = e.solar > 0 ? `家の使用量の ${Math.min(100, Math.round(e.solar / e.home * 100))}% をまかなっています` : '夜のため発電していません';
+    put($('#e-batt'), Math.round(energy.battery));
+    $('#e-batt-s').textContent = e.batt < 0 ? `充電中 · ${Math.round(-e.batt)} W` : e.batt > 0 ? `放電中 · ${Math.round(e.batt)} W` : '待機中';
+    $('#n-home').textContent = `${Math.round(e.home)}`; $('#n-solar').textContent = `${Math.round(e.solar)}`;
+    $('#n-grid').textContent = `${Math.round(Math.abs(e.grid))}`; $('#n-batt').textContent = `${Math.round(energy.battery)}%`;
+    E._flow = e;
+  }
+}
+
+/* ---------- screens ---------- */
+let screen = 'home';
+function go(to) {
+  if (to === screen) return;
+  const btn = $(`#nav [data-go="${to}"]`);
+  const swap = () => { $('#screen-home').hidden = to !== 'home'; $('#screen-energy').hidden = to !== 'energy'; screen = to; document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.go === to)); render(); };
+  if (!MOVE) return swap();
+  // bold: a circle of the brightest room's light grows from the nav button, the screen swaps under it, then it fades
+  const w = $('#wipe'), c = w.getContext('2d');
+  const r = rooms.filter(x => x.on).sort((a, b) => b.bri - a.bri)[0] || rooms[0];
+  const ox = 32 + 160, oy = 448 + (to === 'home' ? 49 : 127);
+  const t0 = performance.now(); let swapped = false;
+  w.style.opacity = 1;
+  (function step(t) {
+    const k = Math.min(1, (t - t0) / 900);
+    c.clearRect(0, 0, 1600, 900);
+    const grow = k < .5 ? k / .5 : 1, fade = k < .5 ? 1 : 1 - (k - .5) / .5;
+    const g = c.createRadialGradient(ox, oy, 0, ox, oy, 1900 * grow);
+    g.addColorStop(0, `hsla(${r.hue},90%,62%,${.9 * fade})`); g.addColorStop(.6, `hsla(${r.hue},80%,40%,${.55 * fade})`); g.addColorStop(1, `hsla(${r.hue},80%,20%,0)`);
+    c.fillStyle = g; c.fillRect(0, 0, 1600, 900);
+    if (k >= .5 && !swapped) { swapped = true; swap(); }
+    if (k < 1) requestAnimationFrame(step); else { w.style.opacity = 0; }
+  })(t0);
+}
+document.querySelectorAll('#nav button').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
+addEventListener('keydown', e => { if (e.key === '1') go('home'); if (e.key === '2') go('energy'); });
+
+/* ---------- animation (bold only): aura, sparks, equalizer ---------- */
+const aura = $('#aura'), ac = aura.getContext('2d');
+let last = 0, frames = 0, auraDraws = 0;
+const AURA = root.dataset.bg !== 'none';
+function frame(t) {
+  requestAnimationFrame(frame);
+  if (t - last < 33) return; last = t;           // 30 fps cap
+  root.dataset.frames = ++frames;
+  const lit = rooms.filter(r => r.on);
+  if (AURA) { ac.clearRect(0, 0, 800, 450); root.dataset.aura = ++auraDraws; }
+  if (AURA) lit.forEach((r, i) => {
+    const x = 400 + Math.sin(t / 9000 + i * 1.7) * 300, y = 225 + Math.cos(t / 11000 + i * 2.3) * 160;
+    const g = ac.createRadialGradient(x, y, 0, x, y, 260 + r.bri * 120);
+    g.addColorStop(0, `hsla(${r.hue},85%,55%,${(LOOK === 'tile' ? .10 : .16) * (.5 + r.bri)})`); g.addColorStop(1, `hsla(${r.hue},85%,55%,0)`);
+    ac.fillStyle = g; ac.fillRect(0, 0, 800, 450);
+  });
+  if (!$('#screen-energy').hidden && E._wires && E._flow) {
+    const f = E._flow, flows = { 'solar>home': Math.min(f.solar, f.home), 'grid>home': Math.max(0, f.grid), 'batt>home': Math.max(0, f.batt), 'solar>batt': Math.max(0, -f.batt) };
+    const colors = { solar: 'var(--warn)', grid: 'var(--accent)', batt: 'var(--ok)' };
+    $('#sparks').innerHTML = E._wires.map(w => {
+      const watts = flows[`${w.from}>${w.to}`] || 0; if (watts < 5) return '';
+      const len = w.el.getTotalLength(), n = Math.min(9, 2 + Math.round(watts / 350)), speed = .00004 + watts / 3200 * .00012;
+      return Array.from({ length: n }, (_, i) => { const p = w.el.getPointAtLength(((t * speed + i / n) % 1) * len); return `<circle cx="${p.x}" cy="${p.y}" r="${3.5 + watts / 900}" fill="${colors[w.from]}"/>`; }).join('');
+    }).join('');
+  }
+  document.querySelectorAll('#eq i').forEach((b, i) => b.style.height = `${20 + Math.abs(Math.sin(t / (180 + i * 37) + i)) * 80}%`);
+  const fl = $('#focus-line'); if (fl) fl.style.strokeDashoffset = -t / 40;
+  document.querySelectorAll('.fixture').forEach((c, i) => { const r = rooms[i]; c.setAttribute('r', r.on ? 5 + Math.sin(t / 600 + i) * 1.2 : 4); });
+}
+
+/* ---------- simulation ticks ---------- */
+function tick() {
+  rooms.forEach(r => { r.temp = Math.round((r.temp + (Math.random() - .5) * .2) * 10) / 10; r.hum = Math.max(35, Math.min(75, r.hum + Math.round((Math.random() - .5) * 2))); });
+  media.pos = (media.pos + 2.5) % media.len;
+  const e = energyNow(); energy.battery = Math.max(10, Math.min(100, energy.battery - e.batt / 4000));
+  if (sec.wash > 0 && Math.random() < .3) { sec.wash--; if (sec.wash === 0) addLog('洗濯が終わりました'); }
+  render();
+}
+let n = 0;
+function event() {
+  n++;
+  const r = rooms[(n * 4) % rooms.length];
+  if (n % 3 === 0) { const p = people[1]; p.room = p.room ? null : 'entrance'; addLog(p.room ? `${p.name}さんが帰宅しました` : `${p.name}さんが外出しました`); if (p.room) { sec.lock = false; setTimeout(() => { sec.lock = true; p.room = 'kitchen'; addLog('玄関の鍵を閉めました'); render(); }, 5000); } }
+  else if (n % 3 === 1) { r.on = !r.on; addLog(`${r.name}の照明を${r.on ? '点け' : '消し'}ました`); }
+  else { sec.motion = !sec.motion; if (sec.motion) addLog('庭のカメラが動きを検知しました'); people[0].room = people[0].room === 'living' ? 'study' : 'living'; }
+  render();
+}
+
+buildHome(); buildEnergy(); render();
+if (Q.get('screen') === 'energy') { const m = MOVE; screen = 'home'; $('#screen-home').hidden = true; $('#screen-energy').hidden = false; screen = 'energy'; document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.go === 'energy')); render(); }
+if (MOTION !== 'off') {
+  setInterval(tick, 2500); setInterval(event, 9000);
+  if (MOVE) { requestAnimationFrame(frame); setInterval(() => { focusIdx++; render(); }, 7000); setInterval(() => go(screen === 'home' ? 'energy' : 'home'), 24000); }
+}
+root.dataset.ready = '1';
+</script>
+</body>
+</html>

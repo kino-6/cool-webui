@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# The full run belongs here and only here: it is the backstop that makes every
+# earlier skip affordable. Wired by: git config core.hooksPath .githooks
+# Do not bypass with --no-verify; a skipped pre-push run means nothing was verified.
+set -euo pipefail
+
+# Decide the base first. Falling back with `check --base @{upstream} || check
+# --base HEAD` would turn a genuine failure against upstream into a pass.
+if base="$(git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null)"; then
+  python3 tools/check_tasks_lock.py --base "$base"
+else
+  python3 tools/check_tasks_lock.py --base HEAD
+fi
+
+# Full gate: re-runs every passing row's gate (tools/full_gate.py).
+# git passes "<local ref> <local sha> <remote ref> <remote sha>" lines on stdin.
+# The sha being pushed lets tools/check_setup.sh skip "HEAD is pushed" for exactly this push.
+while read -r lref lsha rref rsha; do
+  [ "$rref" = refs/heads/main ] && export PUSHING_SHA="$lsha"
+done
+full_gate() {
+  python3 tools/full_gate.py
+}
+full_gate

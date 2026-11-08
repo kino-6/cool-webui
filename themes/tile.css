@@ -1,0 +1,21 @@
+/* Tile look (ha-look.md candidate 1): flat dark tiles, one accent, Inter. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500&display=swap');
+
+:root {
+  --cw-ground: #121212;
+  --cw-ground-solid: #121212;
+  --cw-surface: #1D1D1D;
+  --cw-surface-on: rgba(255, 255, 255, 0.85);
+  --cw-text-on: #121212;
+  --cw-border: 1px solid rgba(255, 255, 255, 0.06);
+  --cw-radius: 16px;
+  --cw-blur: none;
+  --cw-well: #171717;
+  --cw-text: #EDEDED;
+  --cw-text-dim: #9A9A9A;
+  --cw-signal: #4A90C2;
+  --cw-ok: #80C994;
+  --cw-warn: #F18B82;
+  --cw-font: Inter, 'Noto Sans JP', system-ui, sans-serif;
+  --cw-background-kind: plain;
+}

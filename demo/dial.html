@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-dial</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--cw-ground-solid); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; padding: 48px; box-sizing: border-box; align-content: start; }
+  cw-panel { height: 340px; }
+  #small { position: fixed; left: 16px; bottom: 16px; width: 140px; height: 140px; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="居間のエアコン"><cw-dial id="heat" label="室温" unit="°C" min="10" max="30" digits="1" value="21.4" target="22.5"></cw-dial></cw-panel>
+    <cw-panel label="湿度"><cw-dial id="hum" unit="%" value="48" warn-above="70"></cw-dial></cw-panel>
+    <cw-panel label="蓄電池"><cw-dial id="batt" unit="%" value="" warn-below="20"></cw-dial></cw-panel>
+  </div>
+</cw-stage>
+<cw-dial id="small" unit="°C" min="10" max="30" value="18" target="30" motion="full"></cw-dial>
+<script>
+  const m = new URLSearchParams(location.search).get('motion');
+  if (m) document.querySelector('#board').setAttribute('motion', m);
+</script>
+</body>
+</html>

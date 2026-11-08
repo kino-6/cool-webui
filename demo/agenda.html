@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-agenda</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--cw-ground-solid); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 48px; height: 100%; box-sizing: border-box; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="家族の予定" sublabel="11月2日 10:00 で固定"><cw-agenda id="fixed"></cw-agenda></cw-panel>
+    <cw-panel label="いまからの予定"><cw-agenda id="live" days="3"></cw-agenda></cw-panel>
+  </div>
+</cw-stage>
+<cw-agenda id="empty" motion="full" style="position:fixed;left:16px;bottom:16px;width:300px"></cw-agenda>
+<script>
+  const m = new URLSearchParams(location.search).get('motion');
+  if (m) document.querySelector('#board').setAttribute('motion', m);
+  const at = (d, h, min = 0) => new Date(2026, 10, 2 + d, h, min).getTime();
+  const fixed = document.getElementById('fixed');
+  fixed.now = at(0, 10);
+  fixed.events = [
+    { title: '昨日の飲み会', start: at(-1, 20), end: at(-1, 21) },
+    { title: '燃えるごみ', start: at(0, 0), allDay: true, color: '#80c994' },
+    { title: '在宅の会議', start: at(0, 9, 30), end: at(0, 10, 30), where: '書斎' },
+    { title: '歯医者', start: at(0, 10, 25), end: at(0, 11), where: '駅前クリニック', color: '#f0b45a' },
+    { title: '夕食の買い出し', start: at(0, 18), end: at(0, 19) },
+    { title: 'ハル 遠足', start: at(1, 8), end: at(1, 15), where: '動物園', color: '#c08bf2' },
+    { title: '車の点検', start: at(3, 13), end: at(3, 14), where: '車庫' },
+    { title: '旅行', start: at(10, 9), allDay: true },
+  ];
+  const now = Date.now(), H = 3600e3;
+  document.getElementById('live').events = [
+    { title: '洗濯物を取り込む', start: now + 0.4 * H, end: now + 0.6 * H },
+    { title: 'オンラインの会議', start: now - 0.2 * H, end: now + 0.8 * H, where: '書斎' },
+    { title: '燃えないごみ', start: now + 30 * H, allDay: true, color: '#80c994' },
+  ];
+</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-background</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; padding: 12px; height: 100%; box-sizing: border-box; }
+  cw-stage { min-height: 0; }
+  .card { position: absolute; left: 80px; top: 80px; padding: 28px 36px; font-size: 40px; background: var(--cw-surface); border: var(--cw-border); border-radius: var(--cw-radius); backdrop-filter: var(--cw-blur); }
+  #alone { position: fixed; inset: auto 12px 12px auto; width: 160px; height: 90px; outline: 1px solid #333; }
+</style>
+<body>
+<div class="grid">
+  <cw-stage id="full" motion="full" fps="10"><div class="card">motion=full</div></cw-stage>
+  <cw-stage id="calm"><div class="card">calm（背景なし）</div></cw-stage>
+  <cw-stage id="aura" bg="aura"><div class="card">bg=aura, calm</div></cw-stage>
+  <cw-stage id="none" motion="full" bg="none"><div class="card">bg=none</div></cw-stage>
+</div>
+<cw-stage id="plain" motion="full" bg="plain" style="display:none"></cw-stage>
+<cw-background id="alone" motion="full"></cw-background>
+<script>
+  // warm living room, cool bedroom, dim hallway
+  document.getElementById('full').lights = [{ color: '#ffb35c', level: 0.9 }, { color: '#7aa2ff', level: 0.6 }, { color: '#ff7ab8', level: 0.3 }];
+  document.getElementById('aura').lights = [{ color: '#ffb35c', level: 0.8 }, { color: '#80c994', level: 0.5 }];
+</script>
+</body>
+</html>

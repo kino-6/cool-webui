@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-bars / cw-chart</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; }
+  .grid { display: grid; grid-template-columns: 1fr 1.6fr; grid-template-rows: 1fr 1fr; gap: 24px; padding: 48px; height: 100%; box-sizing: border-box; }
+  .tall { grid-row: span 2; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="部屋ごとの電力" class="tall"><cw-bars id="rooms" unit="W" max="200"></cw-bars></cw-panel>
+    <cw-panel label="応答時間" sublabel="直近 10 点"><cw-chart id="lat" label="応答時間" unit="ms" series="p50,p95" points="10" min="0" max="400"></cw-chart></cw-panel>
+    <cw-panel label="室温の推移"><cw-chart id="auto" series="v" unit="°C" points="60"></cw-chart></cw-panel>
+  </div>
+</cw-stage>
+<script>
+  // demo data when opened by hand; the test overwrites it
+  const rooms = document.querySelector('#rooms');
+  rooms.data = [['居間', 182], ['台所', 140], ['寝室', 36], ['書斎', 95], ['洗面所', 12], ['玄関', 8]].map(([label, value]) => ({ label, value }));
+  const lat = document.querySelector('#lat');
+  for (let i = 0; i < 10; i++) lat.push({ p50: 120 + 30 * Math.sin(i / 2), p95: 260 + 60 * Math.sin(i / 3 + 1) });
+  const auto = document.querySelector('#auto');
+  for (let i = 0; i < 60; i++) auto.push({ v: 21 + 1.5 * Math.sin(i / 9) + i / 40 });
+  if (new URLSearchParams(location.search).get('motion')) document.querySelector('#board').setAttribute('motion', new URLSearchParams(location.search).get('motion'));
+</script>
+</body>
+</html>

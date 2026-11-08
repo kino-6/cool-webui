@@ -1,0 +1,9 @@
+# Hosts that refuse scripts (401/403/429) but whose pages exist.
+# check_doc.py --check-urls does not judge these hosts. Add a host only after confirming,
+# by another route, that the cited page exists and says what the document claims.
+# host            date        how the page was confirmed
+themeforest.net   2026-10-28  WebFetch read the HUD item page ($39, 1,932 sales)
+ui.shadcn.com     2026-10-28  403 to curl, WebFetch and a browser user agent; content confirmed via dev.to and ssojet.com write-ups
+steamcommunity.com 2026-10-29  429 to curl after a burst; WebFetch read every cited item: 884307090 (9,239,248 subs), 2955378002 (669,535), 3585875739 (683,971), 2992660460 (341,156). Uncheckable items were dropped from demand.md
+community.home-assistant.io 2026-10-29  429 when check_doc fires 8 requests at once; sequential reads of t/609678 (440,631 views) and t/388590 (1,674,624) matched ha-look.md, and the T022 audit matched 3 more
+store.streamspell.com 2026-11-04  429 when the check_doc self-tests open it several times in a row (Retry-After 60); a single fetch after waiting read 'Cyberpunk: Night City Stream Package' at $21 and 'Ultimate MultiStyle Chat' at $12, as market.md says

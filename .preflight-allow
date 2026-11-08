@@ -1,0 +1,1 @@
+tools/tests/fixtures/gate_fail.log   # a three-line fake full-gate log written for tests, not a session log

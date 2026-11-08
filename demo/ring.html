@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-ring</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; }
+  .wrap { position: absolute; left: 50%; top: 50%; width: 640px; height: 640px; transform: translate(-50%, -50%); }
+  .big { position: absolute; inset: 0; display: grid; place-items: center; font: 900 120px var(--cw-display-font, var(--cw-font)); font-stretch: var(--cw-display-stretch, normal); color: var(--cw-text); }
+</style>
+<body>
+<cw-stage id="stage">
+  <div class="wrap">
+    <cw-ring id="ring" text="Home Control · Living · Kitchen · Study · Bedroom"></cw-ring>
+    <div class="big">22.4°</div>
+  </div>
+</cw-stage>
+<div style="position:fixed;left:16px;bottom:16px;width:160px;height:160px"><cw-ring id="alone" text="alone" speed="10"></cw-ring></div>
+<div style="position:fixed;right:16px;top:16px;width:200px;height:200px"><cw-ring id="capped" text="fps fifteen" fps="15" motion="full"></cw-ring></div>
+<script>
+  const motion = new URLSearchParams(location.search).get('motion');
+  if (motion) document.getElementById('stage').setAttribute('motion', motion);
+</script>
+</body>
+</html>

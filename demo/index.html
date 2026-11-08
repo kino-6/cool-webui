@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cool-webui 部品のカタログ</title>
+<link rel="icon" href="data:,">
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<script src="../dist/cw-ha-card.iife.js"></script>
+<style>
+  html { background: var(--cw-ground-solid); }
+  body { margin: 0; min-height: 100vh; background: var(--cw-ground); background-attachment: fixed; color: var(--cw-text); font: 15px/1.6 var(--cw-font); }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding: 28px 32px 8px; }
+  h1 { margin: 0; font: var(--cw-display-weight, 600) 26px var(--cw-display-font, var(--cw-font)); font-stretch: var(--cw-display-stretch, normal); }
+  .home { color: var(--cw-text-on); background: var(--cw-surface-on); border-radius: 999px; padding: 8px 18px; text-decoration: none; font-weight: 600; }
+  [data-theme='game'] .home { border-radius: 0; transform: var(--cw-label-skew); }
+  h2 { margin: 28px 32px 12px; font-size: 13px; font-weight: 600; letter-spacing: .12em; color: var(--cw-text-dim); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; padding: 0 32px; }
+  article { display: flex; flex-direction: column; gap: 10px; padding: 14px; background: var(--cw-surface); border: var(--cw-border); border-radius: var(--cw-radius); backdrop-filter: var(--cw-blur); }
+  [data-theme='game'] article:nth-child(odd) { rotate: .5deg; } [data-theme='game'] article:nth-child(even) { rotate: -.5deg; }
+  [data-theme='game'] article { box-shadow: var(--cw-shadow); }
+  .preview { aspect-ratio: 16 / 10; border-radius: calc(var(--cw-radius) * .6); overflow: hidden; position: relative; }
+  .preview > cw-stage { min-height: 0; }
+  .preview.card { aspect-ratio: auto; overflow: visible; }
+  article div.name { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  code { font: 500 14px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--cw-signal); }
+  article p { margin: 0; color: var(--cw-text-dim); font-size: 14px; }
+  article a { color: var(--cw-text-dim); font-size: 13px; white-space: nowrap; }
+  pre { margin: 0; height: 100%; box-sizing: border-box; padding: 16px; background: var(--cw-well); font: 13px/1.7 ui-monospace, Menlo, monospace; color: var(--cw-text); white-space: pre-wrap; }
+  .pad { position: absolute; inset: 28px; width: auto; height: auto; }
+  .list { display: flex; flex-direction: column; gap: 16px; }
+  footer { height: 48px; }
+
+  /* the same switches as the home sample: macOS `open` drops ?query from file URLs */
+  .pick { position: fixed; top: 8px; right: 8px; z-index: 10; display: flex; gap: 6px; }
+  .pick div { display: flex; align-items: center; border-radius: 999px; overflow: hidden; background: rgb(0 0 0 / .55); }
+  .pick span { font: 500 12px system-ui, sans-serif; color: #8a8a8a; padding: 0 4px 0 12px; }
+  .pick button { font: 500 12px system-ui, sans-serif; color: #cfcfcf; background: none; border: 0; padding: 6px 11px; cursor: pointer; }
+  .pick button[aria-pressed='true'] { background: #ededed; color: #121212; }
+</style>
+<body>
+<nav class="pick" aria-label="見た目と動き">
+  <div><button data-theme="tile">タイル</button><button data-theme="glass">ガラス</button><button data-theme="game">ゲーム</button></div>
+  <div role="group" aria-label="動き"><span>動き</span><button data-motion="off">なし</button><button data-motion="calm">控えめ</button><button data-motion="full">多め</button></div>
+</nav>
+<header>
+  <h1>cool-webui 部品のカタログ</h1>
+  <a class="home" href="home.html">家の見本を開く</a>
+</header>
+
+<h2>土台</h2>
+<section class="grid">
+  <article data-tag="cw-stage">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="舞台の中"><cw-stat value="482" unit="W"></cw-stat></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-stage&gt;</code><a href="stage.html">見本</a></div>
+    <p>固定比率の舞台。窓に合わせて拡大縮小し、動きの量・背景・一時停止を中の部品に伝える。</p>
+  </article>
+  <article data-tag="cw-background">
+    <div class="preview"><cw-stage base="480x300" controls="none" bg="none"><cw-background id="bg" style="position:absolute;inset:0"></cw-background></cw-stage></div>
+    <div class="name"><code>&lt;cw-background&gt;</code><a href="background.html">見本</a></div>
+    <p>点いている灯りの色でにじむ地。ゲームでは斜めの光の帯が流れる。多めの動きで動く。</p>
+  </article>
+  <article data-tag="cw-panel">
+    <div class="preview"><cw-stage base="480x300" controls="none">
+      <cw-panel label="居間" sublabel="22.4 °C" style="position:absolute;left:24px;top:28px;width:200px;height:200px"><cw-stat value="85" unit="%" label="明るさ"></cw-stat></cw-panel>
+      <cw-panel label="台所" sublabel="点灯" on style="position:absolute;left:252px;top:28px;width:200px;height:200px"><cw-stat value="60" unit="%" label="明るさ"></cw-stat></cw-panel>
+    </cw-stage></div>
+    <div class="name"><code>&lt;cw-panel&gt;</code><a href="panel.html">見本</a></div>
+    <p>枠と名札。<code>on</code> で点いている面になり、中の文字色も合わせて変わる。</p>
+  </article>
+  <article data-tag="cw-screens cw-screen">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-screens id="scr" class="pad">
+      <cw-screen name="a"><cw-panel label="画面 1 · ホーム" style="height:100%"><cw-clock></cw-clock></cw-panel></cw-screen>
+      <cw-screen name="b"><cw-panel label="画面 2 · 電力" on style="height:100%"><cw-stat value="1240" unit="W"></cw-stat></cw-panel></cw-screen>
+    </cw-screens></cw-stage></div>
+    <div class="name"><code>&lt;cw-screens&gt; &lt;cw-screen&gt;</code><a href="screens.html">見本</a></div>
+    <p>画面の切り替えと演出。多めでは光が広がり、ゲームでは斜めの板が横切る。</p>
+  </article>
+</section>
+
+<h2>値</h2>
+<section class="grid">
+  <article data-tag="cw-stat">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="室温"><cw-stat id="stat" unit="°C" digits="1" value="22.4" warn-above="28"></cw-stat></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-stat&gt;</code><a href="values.html">見本</a></div>
+    <p>大きな数値と単位。閾値を超えると警告の色。多めでは数字が転がる。</p>
+  </article>
+  <article data-tag="cw-status">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="家の状態"><div class="list">
+      <cw-status label="玄関の鍵" state="online" text="施錠"></cw-status><cw-status label="洗濯機" state="standby"></cw-status><cw-status label="庭のカメラ" state="offline" text="応答なし"></cw-status>
+    </div></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-status&gt;</code><a href="values.html">見本</a></div>
+    <p>状態のランプと名前、その状態になってからの時間。</p>
+  </article>
+  <article data-tag="cw-clock">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="いま"><cw-clock></cw-clock></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-clock&gt;</code><a href="values.html">見本</a></div>
+    <p>日付と時刻。自分で進む。時間帯を選べる。</p>
+  </article>
+  <article data-tag="cw-bars">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="部屋ごとの電力"><cw-bars id="bars" unit="W"></cw-bars></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-bars&gt;</code><a href="charts.html">見本</a></div>
+    <p>横棒の一覧。値が変わると棒が伸び縮みする。</p>
+  </article>
+  <article data-tag="cw-chart">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="電力の推移"><cw-chart id="chart" series="使用,太陽光" unit="W" points="40" min="0"></cw-chart></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-chart&gt;</code><a href="charts.html">見本</a></div>
+    <p>折れ線。直近の点を保ち、新しい値を右に足していく。</p>
+  </article>
+  <article data-tag="cw-log">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="出来事"><cw-log id="log" lines="5"></cw-log></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-log&gt;</code><a href="streams.html">見本</a></div>
+    <p>流れるログ。新しい行が上。水準で絞り込める。</p>
+  </article>
+  <article data-tag="cw-feed">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="連絡"><cw-feed id="feed" items="3"></cw-feed></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-feed&gt;</code><a href="streams.html">見本</a></div>
+    <p>発言や出来事の一覧。話す人と本文を並べる。</p>
+  </article>
+  <article data-tag="cw-ticker">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel style="position:absolute;left:28px;right:28px;top:124px;height:52px;--cw-panel-padding:8px 18px"><cw-ticker id="ticker" speed="70"></cw-ticker></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-ticker&gt;</code><a href="streams.html">見本</a></div>
+    <p>文字の帯。多めでは右から左へ流れ、それ以外は最新の 1 つを出す。</p>
+  </article>
+  <article data-tag="cw-floorplan">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-floorplan id="plan" style="position:absolute;inset:8px"></cw-floorplan></cw-stage></div>
+    <div class="name"><code>&lt;cw-floorplan&gt;</code><a href="floorplan.html?motion=full">見本</a></div>
+    <p>家を斜め上から見た間取り。点いている部屋が灯りの色で光る。押すと切り替わる。</p>
+  </article>
+  <article data-tag="cw-flow">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-flow id="flow" unit="W" style="position:absolute;inset:8px"></cw-flow></cw-stage></div>
+    <div class="name"><code>&lt;cw-flow&gt;</code><a href="flow.html?motion=full">見本</a></div>
+    <p>電気の流れ。電力が大きいほど粒が多く、速く走る。</p>
+  </article>
+  <article data-tag="cw-agenda">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="家族の予定"><cw-agenda id="agenda" max="4"></cw-agenda></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-agenda&gt;</code><a href="agenda.html">見本</a></div>
+    <p>今日からの予定を日ごとに並べる。進行中に「いま」、次の予定に「あと何分」を出す。</p>
+  </article>
+  <article data-tag="cw-weather">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="天気" sublabel="東京"><cw-weather id="weather" days="4"></cw-weather></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-weather&gt;</code><a href="weather.html">見本</a></div>
+    <p>いまの気温と空模様、数日の予報。空模様は Home Assistant の言葉で受けて日本語にする。</p>
+  </article>
+  <article data-tag="cw-battery">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="電池"><cw-battery id="battery" max="5"></cw-battery></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-battery&gt;</code><a href="battery.html">見本</a></div>
+    <p>電池の残りを少ない順に並べる。少ないものは警告の色で目立たせる。</p>
+  </article>
+  <article data-tag="cw-vacuum">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="掃除機"><cw-vacuum id="vacuum" label="ルンバ"></cw-vacuum></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-vacuum&gt;</code><a href="vacuum.html?motion=full">見本</a></div>
+    <p>掃除機の状態・電池・掃除した広さと時間と、始める・止める・戻すのボタン。</p>
+  </article>
+  <article data-tag="cw-timer">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="家事"><cw-timer id="timer" label="洗濯機"></cw-timer></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-timer&gt;</code><a href="timer.html">見本</a></div>
+    <p>残り時間を数字と減っていく帯で出す。終わると「終了」に変わる。</p>
+  </article>
+  <article data-tag="cw-cover">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="居間"><cw-cover id="cover" label="南の窓"></cw-cover></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-cover&gt;</code><a href="cover.html?motion=full">見本</a></div>
+    <p>窓の覆いの開き具合を絵と % で出し、開ける・止める・閉めると位置の帯で動かす。</p>
+  </article>
+  <article data-tag="cw-person">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="家族"><cw-person id="person"></cw-person></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-person&gt;</code><a href="person.html?motion=full">見本</a></div>
+    <p>人の居場所と、いつからそこにいるか。在宅の人を先に並べる。</p>
+  </article>
+  <article data-tag="cw-area">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad"><cw-area id="area" label="居間"></cw-area></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-area&gt;</code><a href="area.html?motion=full">見本</a></div>
+    <p>部屋 1 つの温度・湿度・点いている照明・人の動き。押すと部屋の照明をまとめて消す・点ける。</p>
+  </article>
+  <article data-tag="cw-sky">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="空"><cw-sky id="sky"></cw-sky></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-sky&gt;</code><a href="sky.html?motion=full">見本</a></div>
+    <p>昼の弧に太陽の位置、日の出・日の入りと昼の長さ。夜は月の満ち欠けを出す。</p>
+  </article>
+  <article data-tag="cw-alarm">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="防犯"><cw-alarm id="alarm" label="家"></cw-alarm></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-alarm&gt;</code><a href="alarm.html?motion=full">見本</a></div>
+    <p>防犯の状態と、警戒の型のボタン、数字の押しボタン。暗証番号は画面に出さない。</p>
+  </article>
+  <article data-tag="cw-todo">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="買い物"><cw-todo id="todo" max="5"></cw-todo></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-todo&gt;</code><a href="todo.html">見本</a></div>
+    <p>やることを期限の近い順に並べ、押して終えた印を付ける。期限切れは警告の色。</p>
+  </article>
+</section>
+
+<h2>操作と飾り</h2>
+<section class="grid">
+  <article data-tag="cw-dial">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="居間のエアコン"><cw-dial label="室温" unit="°C" min="10" max="30" digits="1" value="21.4" target="22.5"></cw-dial></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-dial&gt;</code><a href="dial.html">見本</a></div>
+    <p>円弧の目盛りと真ん中の数字。設定値があれば − ＋ で動かし、<code>cw-target</code> を出す。</p>
+  </article>
+  <article data-tag="cw-switch">
+    <div class="preview"><cw-stage base="480x300" controls="none"><div class="pad list">
+      <cw-switch id="sw" label="天井の灯り" on level="0.7" color="#ffb35c"></cw-switch><cw-switch label="換気扇"></cw-switch>
+    </div></cw-stage></div>
+    <div class="name"><code>&lt;cw-switch&gt;</code><a href="switch.html">見本</a></div>
+    <p>押して点け消しし、帯で明るさを変える。<code>cw-toggle</code> と <code>cw-level</code> を出す。</p>
+  </article>
+  <article data-tag="cw-camera">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-camera class="pad" label="庭" src="img/garden.svg" refresh="5"></cw-camera></cw-stage></div>
+    <div class="name"><code>&lt;cw-camera&gt;</code><a href="camera.html">見本</a></div>
+    <p>カメラの映像に名前と時刻を重ねる。静止画を一定間隔で取り直すか、動画を流す。</p>
+  </article>
+  <article data-tag="cw-media">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="居間のスピーカー"><cw-media id="media" style="height:150px"></cw-media></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-media&gt;</code><a href="media.html">見本</a></div>
+    <p>再生中の曲と進み具合、前・再生・次のボタンと音量。<code>cw-media</code> と <code>cw-volume</code> を出す。</p>
+  </article>
+  <article data-tag="cw-ring">
+    <div class="preview"><cw-stage base="480x300" controls="none"><div style="position:absolute;left:100px;top:0;width:280px;height:300px"><cw-ring text="Home Control · Living · Kitchen · Study" speed="30"></cw-ring></div></cw-stage></div>
+    <div class="name"><code>&lt;cw-ring&gt;</code><a href="ring.html?motion=full&theme=game">見本</a></div>
+    <p>円に沿って回る文字の輪と、内側で逆に回る目盛り。多めで回る。</p>
+  </article>
+</section>
+
+<h2>つなぐ</h2>
+<section class="grid">
+  <article data-tag="cw-ha-card">
+    <div class="preview card"><cw-ha-card id="card"></cw-ha-card></div>
+    <div class="name"><code>cw-ha-card</code><a href="ha-card.html">見本</a></div>
+    <p>Home Assistant のカード。上の部品を設定の <code>kind</code> で並べる。</p>
+  </article>
+  <article data-tag="cw-source">
+    <div class="preview"><pre>&lt;cw-source src="wss://example/ws"&gt;&lt;/cw-source&gt;
+{ "target": "#power",
+  "prop": "value",
+  "value": 482 }</pre></div>
+    <div class="name"><code>&lt;cw-source&gt;</code><a href="source.html">見本</a></div>
+    <p>WebSocket・SSE・一定間隔の取得・postMessage から値を受けて、舞台の中の部品に配る。画面は持たない。</p>
+  </article>
+</section>
+<footer></footer>
+
+<script>
+  const q = new URLSearchParams(location.search);
+  const look = document.documentElement.dataset.theme;
+  let motion = ['off', 'calm', 'full'].includes(q.get('motion')) ? q.get('motion') : 'calm';
+  const stages = document.querySelectorAll('.preview cw-stage');
+  const mark = () => document.querySelectorAll('.pick button').forEach((b) =>
+    b.setAttribute('aria-pressed', String(b.dataset.theme ? b.dataset.theme === look : b.dataset.motion === motion)));
+  const setMotion = (m) => {
+    motion = m;
+    stages.forEach((s) => s.setAttribute('motion', m));
+    history.replaceState(null, '', '?' + new URLSearchParams({ ...Object.fromEntries(q), motion: m }));
+    mark();
+  };
+  document.querySelectorAll('.pick button').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.motion) return setMotion(b.dataset.motion);
+    location.search = new URLSearchParams({ theme: b.dataset.theme, motion });
+  }));
+  setMotion(motion);
+
+  const $ = (id) => document.getElementById(id);
+  const kind = getComputedStyle(document.documentElement).getPropertyValue('--cw-background-kind').trim();
+  $('bg').kind = kind === 'streaks' ? 'streaks' : 'aura';
+  $('bg').lights = [{ color: '#ffb35c', level: 0.9 }, { color: '#7aa2ff', level: 0.6 }, { color: '#ff7ab8', level: 0.4 }];
+  $('plan').rooms = [
+    { id: 'living', name: '居間', x: 0, y: 0, w: 6, h: 4.5, on: true, color: 'hsl(36 90% 62%)', level: 0.85, note: '22.4°' },
+    { id: 'kitchen', name: '台所', x: 6, y: 0, w: 3, h: 4.5, on: true, color: 'hsl(48 90% 62%)', level: 0.6 },
+    { id: 'study', name: '書斎', x: 9, y: 0, w: 3, h: 4.5, on: false, color: 'hsl(205 90% 62%)', level: 0.7 },
+    { id: 'bedroom', name: '寝室', x: 0, y: 4.5, w: 5, h: 3.5, on: true, color: 'hsl(275 90% 62%)', level: 0.35 },
+    { id: 'bath', name: '浴室', x: 5, y: 4.5, w: 3, h: 3.5, on: false, color: 'hsl(190 90% 62%)', level: 0.9 },
+    { id: 'entrance', name: '玄関', x: 8, y: 4.5, w: 4, h: 3.5, on: false, color: 'hsl(30 90% 62%)', level: 0.5 },
+  ];
+  $('plan').focus = 'living';
+  $('plan').addEventListener('cw-room', (e) => { $('plan').rooms = $('plan').rooms.map((r) => (r.id === e.detail.id ? { ...r, on: !r.on } : r)); });
+  $('flow').nodes = [
+    { id: 'solar', label: '太陽光', value: 2400, x: 0.5, y: 0.18, color: '#f0b45a' }, { id: 'grid', label: '電力会社', value: 0, x: 0.15, y: 0.6 },
+    { id: 'batt', label: '蓄電池', value: 76, unit: '%', x: 0.85, y: 0.6, color: 'var(--cw-ok)' }, { id: 'home', label: '家', value: 1240, x: 0.5, y: 0.8 },
+  ];
+  $('flow').links = [{ from: 'solar', to: 'home', value: 1240 }, { from: 'solar', to: 'batt', value: 1160 }];
+  $('log').push({ time: '21:58', level: 'info', type: '在宅', text: 'アオイ が帰宅' });
+  $('log').push({ time: '22:04', level: 'warn', type: '窓', text: '寝室の窓が 20 分開いている' });
+  $('log').push({ time: '22:10', level: 'info', type: '照明', text: '居間 80% に変更' });
+  $('feed').push({ who: 'アオイ', text: '牛乳を買って帰る', time: '21:40' });
+  $('feed').push({ who: 'ハル', text: '19:30 ごろ帰宅の予定', time: '21:52' });
+  $('ticker').push(['夜の窓辺 / Lumen Field を再生中', '外気 14.2 °C', '次のごみの日: 明日 燃えるごみ']);
+  $('media').now = { title: '夜の窓辺', artist: 'Lumen Field', art: 'img/cover.svg', state: 'playing', position: 65, duration: 222, volume: 0.4 };
+  { const H = 3600e3, t = Date.now(); $('agenda').events = [{ title: 'オンラインの会議', start: t - 0.2 * H, end: t + 0.8 * H, where: '書斎' },
+    { title: '洗濯物を取り込む', start: t + 0.5 * H }, { title: '燃えないごみ', start: t + 30 * H, allDay: true, color: '#80c994' }]; }
+  $('weather').now = { condition: 'partlycloudy', temp: 14.6, high: 18, low: 9, humidity: 58 };
+  $('weather').forecast = [1, 2, 3, 4].map((n, i) => ({ time: Date.now() + n * 864e5, condition: ['rainy', 'cloudy', 'sunny', 'lightning-rainy'][i], high: [15, 16, 20, 17][i], low: [11, 10, 8, 12][i] }));
+  $('battery').items = [{ name: '寝室の温度計', level: 12 }, { name: '窓センサー', level: 38 }, { name: '人感センサー', level: 64 }, { name: 'スマホ', level: 81, charging: true }, { name: '浴室の水漏れ', low: true }, { name: '鍵', level: 90 }];
+  $('vacuum').now = { state: 'cleaning', battery: 72, area: 23.6, duration: 18 };
+  $('timer').now = { state: 'active', end: Date.now() + 47 * 60e3, duration: 7200 };
+  $('cover').now = { state: 'open', position: 60 };
+  $('person').people = [{ name: 'アオイ', place: 'home', since: Date.now() - 25 * 60e3, picture: 'img/cover.svg' }, { name: 'ハル', place: 'not_home', since: Date.now() - 3 * 3600e3 }, { name: 'ソラ', place: '学校', since: Date.now() - 26 * 3600e3 }];
+  $('area').now = { temperature: 22.4, humidity: 48, lightsOn: 2, lights: 3, motion: true };
+  $('sky').now = { rise: Date.now() - 3 * 3600e3, set: Date.now() + 7 * 3600e3, phase: 'first_quarter' };
+  $('alarm').now = { state: 'armed_away', codeFormat: 'number', modes: ['home', 'away'] };
+  $('todo').items = [{ uid: 'a', summary: '牛乳', status: 'needs_action' }, { uid: 'b', summary: '電池', status: 'needs_action', due: new Date(Date.now() + 864e5).toLocaleDateString('sv') }, { uid: 'c', summary: 'パン', status: 'completed' }];
+  $('bars').data = [{ label: '居間', value: 182 }, { label: '台所', value: 140 }, { label: '寝室', value: 36 }, { label: '書斎', value: 95 }];
+  for (let i = 0; i < 40; i++) $('chart').push({ 使用: 900 + Math.round(Math.sin(i / 5) * 260), 太陽光: Math.max(0, 1800 + Math.round(Math.cos(i / 7) * 600)) });
+
+  // a little life: the numbers move, the screens take turns
+  let t = 0;
+  setInterval(() => {
+    t++;
+    $('stat').value = 22.4 + Math.sin(t / 3) * 0.8;
+    $('bars').data = $('bars').data.map((b, i) => ({ ...b, value: Math.max(10, b.value + Math.round(Math.sin(t + i) * 18)) }));
+    $('chart').push({ 使用: 900 + Math.round(Math.sin(t / 5) * 260), 太陽光: Math.max(0, 1800 + Math.round(Math.cos(t / 7) * 600)) });
+    if (t % 2 === 0) $('scr').show($('scr').current === 'a' ? 'b' : 'a');
+  }, 2000);
+
+  // the Home Assistant card in the current look, fed by a fake hass that answers its own presses
+  const lights = { 'light.ceiling': { state: 'on', attributes: { brightness: 204, rgb_color: [255, 179, 92] } } };
+  const hass = () => ({
+    states: { ...lights, 'sensor.temp': { state: '22.4', attributes: { unit_of_measurement: '°C' } }, 'lock.front': { state: 'locked', attributes: {} } },
+    callService: (d, s, { entity_id: id, brightness_pct: p }) => {
+      const on = s === 'turn_on' || (s === 'toggle' && lights[id].state !== 'on');
+      lights[id] = { state: on ? 'on' : 'off', attributes: { ...lights[id].attributes, brightness: on ? (p ? Math.round(p * 2.55) : 204) : null } };
+      $('card').hass = hass();
+    },
+  });
+  $('card').setConfig({ title: '居間', look, entities: [
+    { entity: 'sensor.temp', kind: 'stat', label: '室温', digits: 1 }, { entity: 'lock.front', kind: 'status', label: '玄関の鍵' },
+    { entity: 'light.ceiling', kind: 'switch', label: '天井の灯り' } ] });
+  $('card').hass = hass();
+</script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>舞台なし</title>
+<link rel="icon" href="data:,">
+<!-- every part in a plain page, no <cw-stage>: each fills the cell it is put in -->
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; background: var(--cw-ground-solid); color: var(--cw-text); font-family: system-ui, sans-serif; }
+  main { display: grid; grid-template-columns: repeat(auto-fill, 300px); grid-auto-rows: 230px; gap: 16px; padding: 16px; }
+  main > * { min-width: 0; min-height: 0; }
+</style>
+<body>
+<main>
+  <cw-stat id="stat" label="室温" unit="°C" digits="1"></cw-stat>
+  <cw-status id="status" label="玄関の鍵"></cw-status>
+  <cw-clock></cw-clock>
+  <cw-bars id="bars" unit="W"></cw-bars>
+  <cw-chart id="chart" series="使用" points="20"></cw-chart>
+  <cw-log id="log" lines="6"></cw-log>
+  <cw-feed id="feed"></cw-feed>
+  <cw-ticker id="ticker"></cw-ticker>
+  <cw-floorplan id="floorplan"></cw-floorplan>
+  <cw-flow id="flow" unit="W"></cw-flow>
+  <cw-ring id="ring" text="舞台なしでも動く"></cw-ring>
+  <cw-switch id="switch" label="天井の灯り" on level="0.6"></cw-switch>
+  <cw-camera id="camera" label="庭" src="img/garden.svg"></cw-camera>
+  <cw-media id="media"></cw-media>
+  <cw-agenda id="agenda"></cw-agenda>
+  <cw-weather id="weather"></cw-weather>
+  <cw-dial id="dial" label="室温" unit="°C" min="10" max="30" digits="1" value="21.4" target="22"></cw-dial>
+  <cw-battery id="battery"></cw-battery>
+  <cw-vacuum id="vacuum" label="ルンバ"></cw-vacuum>
+  <cw-timer id="timer" label="洗濯機"></cw-timer>
+  <cw-cover id="cover" label="南の窓"></cw-cover>
+  <cw-person id="person"></cw-person>
+  <cw-area id="area" label="居間"></cw-area>
+  <cw-sky id="sky"></cw-sky>
+  <cw-alarm id="alarm" label="家"></cw-alarm>
+  <cw-todo id="todo"></cw-todo>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id), t = Date.now(), H = 3600e3;
+  $('stat').value = 22.4;
+  $('status').state = 'online'; $('status').text = '施錠';
+  $('bars').data = [{ label: '居間', value: 182 }, { label: '台所', value: 140 }, { label: '寝室', value: 36 }];
+  $('chart').data = Array.from({ length: 20 }, (_, i) => ({ 使用: 400 + Math.sin(i / 3) * 120 }));
+  for (let i = 0; i < 4; i++) $('log').push({ time: '19:0' + i, level: 'info', type: 'DEMO', text: `記録 ${i + 1}` });
+  $('feed').push({ id: 1, title: '洗濯が終わった', text: '取り込みましょう' });
+  $('ticker').push('舞台なしの頁でも、どの部品も親の大きさに合わせて描く');
+  $('floorplan').rooms = [{ id: 'a', name: '居間', x: 0, y: 0, w: 6, h: 4, on: true }, { id: 'b', name: '寝室', x: 6, y: 0, w: 4, h: 4 }];
+  $('flow').nodes = [{ id: 's', label: '太陽光', x: 0.2, y: 0.3, value: 1200 }, { id: 'h', label: '家', x: 0.8, y: 0.7, value: 800 }];
+  $('flow').links = [{ from: 's', to: 'h', value: 800 }];
+  $('media').now = { title: '夜の窓辺', artist: 'Lumen Field', state: 'playing', position: 60, duration: 222, volume: 0.4, art: 'img/cover.svg' };
+  $('agenda').events = [{ title: '会議', start: t + H, end: t + 2 * H, where: '書斎' }, { title: '燃えるごみ', start: t + 20 * H, allDay: true }];
+  $('weather').now = { condition: 'partlycloudy', temp: 14.6, high: 18, low: 9, humidity: 58, wind: 3.2 };
+  $('weather').forecast = [1, 2, 3, 4].map((n) => ({ time: t + n * 864e5, condition: ['rainy', 'cloudy', 'sunny', 'snowy'][n - 1], high: 15 + n, low: 5 + n }));
+  $('battery').items = [{ name: '寝室の温度計', level: 12 }, { name: '窓センサー', level: 38 }, { name: 'スマホ', level: 81, charging: true }];
+  $('vacuum').now = { state: 'cleaning', battery: 72, area: 24, duration: 18 };
+  $('timer').now = { state: 'active', end: t + 38 * 60e3, duration: 5400 };
+  $('cover').now = { state: 'open', position: 60 };
+  $('person').people = [{ name: 'アオイ', place: 'home', since: t - 25 * 60e3 }, { name: 'ハル', place: 'not_home', since: t - 3 * H }];
+  $('area').now = { temperature: 22.4, humidity: 48, lights: 3, lightsOn: 2, motion: true };
+  $('sky').now = { rise: t - 3 * H, set: t + 7 * H, phase: 'first_quarter' };
+  $('alarm').now = { state: 'armed_away', codeFormat: 'number', modes: ['home', 'away'] };
+  $('todo').items = [{ uid: '1', summary: '牛乳', status: 'needs_action' }, { uid: '2', summary: 'パン', status: 'completed' }];
+</script>
+</body>
+</html>

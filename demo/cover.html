@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-cover</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--cw-ground-solid); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; padding: 48px; box-sizing: border-box; align-content: start; }
+  cw-panel { height: 190px; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="居間"><cw-cover id="living" label="南の窓"></cw-cover></cw-panel>
+    <cw-panel label="寝室"><cw-cover id="bed" label="ブラインド"></cw-cover></cw-panel>
+    <cw-panel label="動いている"><cw-cover id="moving" label="雨戸"></cw-cover></cw-panel>
+    <cw-panel label="開け閉めだけの機種"><cw-cover id="simple" label="車庫"></cw-cover></cw-panel>
+    <cw-panel label="取得できない"><cw-cover id="none"></cw-cover></cw-panel>
+  </div>
+</cw-stage>
+<script>
+  const m = new URLSearchParams(location.search).get('motion');
+  if (m) document.querySelector('#board').setAttribute('motion', m);
+  document.getElementById('living').now = { state: 'open', position: 60 };
+  document.getElementById('bed').now = { state: 'closed', position: 0 };
+  document.getElementById('moving').now = { state: 'closing', position: 35 };
+  document.getElementById('simple').now = { state: 'open', controls: ['open', 'close'] };
+</script>
+</body>
+</html>

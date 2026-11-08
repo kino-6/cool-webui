@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>この機械</title>
+<link rel="icon" href="data:,">
+<!-- the parts and the connection only: every value comes from tools/machine-feed.mjs (npm run machine) -->
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<script src="../dist/cw-source.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--cw-ground-solid); }
+  .grid { position: absolute; inset: 40px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; grid-template-rows: 230px 1fr 1fr; gap: 20px; }
+  .wide { grid-column: span 2; }
+  .tall { grid-row: span 2; }
+  .pair { display: grid; grid-template-rows: 1fr 1fr; gap: 8px; height: 100%; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="いま"><cw-clock></cw-clock></cw-panel>
+    <cw-panel label="負荷" sublabel="1 分平均"><cw-stat id="load" digits="2" warn-above="12"></cw-stat></cw-panel>
+    <cw-panel label="メモリ"><cw-dial id="memory" label="使用" unit="%" min="0" max="100" digits="1" warn-above="85"></cw-dial></cw-panel>
+    <cw-panel label="全体の検査" sublabel="前回">
+      <div class="pair"><cw-status id="gate" label="結果"></cw-status><cw-stat id="gate-took" label="かかった時間" unit="秒"></cw-stat></div>
+    </cw-panel>
+    <cw-panel label="負荷の推移" sublabel="直近 2 分" class="wide"><cw-chart id="load-chart" series="負荷,コア数" points="60" min="0"></cw-chart></cw-panel>
+    <cw-panel label="CPU を使っている処理" sublabel="%"><cw-bars id="top" unit="%"></cw-bars></cw-panel>
+    <cw-panel label="この repo の記録" class="tall"><cw-log id="commits" lines="12"></cw-log></cw-panel>
+    <cw-panel label="キューの未完了"><cw-todo id="queue" readonly max="5"></cw-todo></cw-panel>
+    <cw-panel label="電池"><cw-battery id="battery"></cw-battery></cw-panel>
+    <cw-panel label="起動してから" sublabel="時間"><cw-stat id="uptime" digits="1" unit="時間"></cw-stat></cw-panel>
+  </div>
+  <cw-source kind="sse" src="/events"></cw-source>
+</cw-stage>
+</body>
+</html>

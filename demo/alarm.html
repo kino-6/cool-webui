@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-alarm</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--cw-ground-solid); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr) 200px; gap: 24px; padding: 48px; box-sizing: border-box; align-content: start; }
+  cw-panel { height: 330px; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="防犯"><cw-alarm id="home" label="家"></cw-alarm></cw-panel>
+    <cw-panel label="外出中"><cw-alarm id="away" label="家"></cw-alarm></cw-panel>
+    <cw-panel label="発報"><cw-alarm id="fire" label="倉庫"></cw-alarm></cw-panel>
+    <cw-panel label="狭い枠"><cw-alarm id="narrow" label="車庫"></cw-alarm></cw-panel>
+    <cw-panel label="暗証なし"><cw-alarm id="open" label="離れ"></cw-alarm></cw-panel>
+    <cw-panel label="文字の暗証"><cw-alarm id="text" label="事務所"></cw-alarm></cw-panel>
+    <cw-panel label="取得できない"><cw-alarm id="none"></cw-alarm></cw-panel>
+  </div>
+</cw-stage>
+<script>
+  const m = new URLSearchParams(location.search).get('motion');
+  if (m) document.querySelector('#board').setAttribute('motion', m);
+  const all = ['home', 'away', 'night', 'vacation'];
+  document.getElementById('home').now = { state: 'disarmed', codeFormat: 'number', codeArmRequired: false, modes: all };
+  document.getElementById('away').now = { state: 'armed_away', codeFormat: 'number', modes: all };
+  document.getElementById('fire').now = { state: 'triggered', codeFormat: 'number', modes: ['away'] };
+  document.getElementById('narrow').now = { state: 'armed_home', codeFormat: 'number', modes: ['home', 'away'] };
+  document.getElementById('open').now = { state: 'disarmed', codeFormat: null, modes: ['home', 'away'] };
+  document.getElementById('text').now = { state: 'armed_night', codeFormat: 'text', modes: ['night', 'away'] };
+</script>
+</body>
+</html>

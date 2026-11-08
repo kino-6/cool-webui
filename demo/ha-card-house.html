@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-ha-card（立体図と電気の流れ）</title>
+<script src="../dist/cw-ha-card.iife.js"></script>
+<style>
+  /* stands in for a Home Assistant dashboard */
+  body { margin: 0; min-height: 100vh; background: #111318; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 24px; align-items: start; }
+  .col { display: flex; flex-direction: column; gap: 16px; }
+  .col.photo { padding: 16px; border-radius: 24px; background: linear-gradient(160deg, #0b1d2b, #1d2d3a 45%, #33281f); }
+</style>
+<body>
+<div class="cols">
+  <div class="col"><cw-ha-card id="tile"></cw-ha-card></div>
+  <div class="col photo"><cw-ha-card id="glass"></cw-ha-card></div>
+  <div class="col" style="padding:16px;background:#0B0912"><cw-ha-card id="game"></cw-ha-card></div>
+</div>
+<script>
+  const q = new URLSearchParams(location.search);
+  const plan = {
+    kind: 'floorplan', height: 340,
+    rooms: [
+      { entity: 'light.living', name: '居間', x: 0, y: 0, w: 6, h: 4.5, temperature: 'sensor.living_temperature' },
+      { entity: 'light.kitchen', name: '台所', x: 6, y: 0, w: 3, h: 4.5 },
+      { entity: 'light.study', name: '書斎', x: 9, y: 0, w: 3, h: 4.5 },
+      { entity: 'light.bedroom', name: '寝室', x: 0, y: 4.5, w: 5, h: 3.5 },
+      { entity: 'light.bath', name: '浴室', x: 5, y: 4.5, w: 3, h: 3.5 },
+      { entity: 'light.entrance', name: '玄関', x: 8, y: 4.5, w: 4, h: 3.5 },
+    ],
+    people: [{ entity: 'person.aoi', name: 'アオイ', color: '#9cc9ef', room: 'light.living' }, { entity: 'person.haru', name: 'ハル', color: '#f2c38b', room: 'light.kitchen' }],
+  };
+  const flow = {
+    kind: 'flow', height: 300,
+    nodes: [
+      { id: 'solar', name: '太陽光', entity: 'sensor.solar_power', x: 0.5, y: 0.2, color: '#f0b45a' },
+      { id: 'grid', name: '電力会社', entity: 'sensor.grid_power', x: 0.15, y: 0.6 },
+      { id: 'batt', name: '蓄電池', entity: 'sensor.battery_level', x: 0.85, y: 0.6, color: '#80c994' },
+      { id: 'home', name: '家', entity: 'sensor.home_power', x: 0.5, y: 0.78 },
+    ],
+    links: [
+      { from: 'solar', to: 'home', entity: 'sensor.solar_to_home' },
+      { from: 'grid', to: 'home', entity: 'sensor.grid_power' },
+      { from: 'solar', to: 'batt', entity: 'sensor.solar_to_battery' },
+    ],
+  };
+  const motion = q.get('motion') || 'full';
+  document.getElementById('tile').setConfig({ title: '家', motion, entities: [plan, flow] });
+  document.getElementById('glass').setConfig({ title: '家', look: 'glass', motion, entities: [plan, flow] });
+  document.getElementById('game').setConfig({ title: '家', look: 'game', motion, entities: [plan, flow] });
+
+  // a fake Home Assistant: lights answer light.toggle, the grid sells (negative) in the middle of the day
+  const lights = {
+    'light.living': { state: 'on', attributes: { brightness: 220, rgb_color: [255, 180, 92] } },
+    'light.kitchen': { state: 'on', attributes: { brightness: 150, hs_color: [48, 90] } },
+    'light.study': { state: 'off', attributes: {} },
+    'light.bedroom': { state: 'on', attributes: { brightness: 90, rgb_color: [190, 120, 255] } },
+    'light.bath': { state: 'off', attributes: {} },
+    'light.entrance': { state: 'off', attributes: {} },
+  };
+  const calls = [];
+  let t = 0;
+  function hass() {
+    t++;
+    return {
+      states: {
+        ...structuredClone(lights),
+        'sensor.living_temperature': { state: '22.4', attributes: {} },
+        'person.aoi': { state: 'home', attributes: {} }, 'person.haru': { state: 'not_home', attributes: {} },
+        'sensor.solar_power': { state: String(2400 + (t % 3) * 30), attributes: { unit_of_measurement: 'W' } },
+        'sensor.home_power': { state: '1300', attributes: { unit_of_measurement: 'W' } },
+        'sensor.grid_power': { state: '-300', attributes: { unit_of_measurement: 'W' } },
+        'sensor.battery_level': { state: '64', attributes: { unit_of_measurement: '%' } },
+        'sensor.solar_to_home': { state: '1300', attributes: {} },
+        'sensor.solar_to_battery': { state: '800', attributes: {} },
+      },
+      callService(domain, service, data) {
+        calls.push([domain, service, data.entity_id]);
+        const l = lights[data.entity_id];
+        if (domain === 'light' && service === 'toggle' && l) l.state = l.state === 'on' ? 'off' : 'on';
+        tick();
+      },
+    };
+  }
+  window.haCalls = calls;
+  function tick() { const h = hass(); for (const id of ['tile', 'glass', 'game']) document.getElementById(id).hass = h; }
+  tick();
+  if (!q.has('still')) setInterval(tick, 2000);
+</script>
+</body>
+</html>

@@ -1,0 +1,1061 @@
+{
+  "version": 1,
+  "id_pattern": "T\\d+",
+  "rows": {
+    "T001": {
+      "title": "非公開リポジトリと作業キューの土台があり、試作が保存されている",
+      "min_check": "`bash tools/check_setup.sh` — 最終行が `SETUP OK`",
+      "gate": "`bash tools/check_setup.sh` — 最終行が `SETUP OK`（push の中では HEAD pushed が skip になり ok は 6 項目、それ以外は 7 項目）",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": [
+        {
+          "date": "2026-10-28",
+          "field": "gate",
+          "reason": "T007 監査: pre-push の中では HEAD pushed が skip になるため「7 項目すべて ok」が出力と合わない。条件を最終行と項目数の場合分けに直す"
+        }
+      ]
+    },
+    "T002": {
+      "title": "誰が・どこで・どう組み込んで使うかが、出典つきでまとまっている",
+      "min_check": "`python3 tools/check_doc.py docs/research/usage.md --sections 想定利用者,利用場面,組み込み方,求められる条件`",
+      "gate": "`python3 tools/check_doc.py docs/research/usage.md --sections 想定利用者,利用場面,組み込み方,求められる条件,設計への示唆,出典 --min-links 6 --min-table-rows 5` — `DOC OK`",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": []
+    },
+    "T003": {
+      "title": "似た部品集・UI キットの一覧と、値段・収益の形・空いている場所がまとまっている",
+      "min_check": "`python3 tools/check_doc.py docs/research/market.md --sections 競合一覧,価格と収益の形,空いている場所`",
+      "gate": "`python3 tools/check_doc.py docs/research/market.md --sections 競合一覧,価格と収益の形,空いている場所,結論,出典 --min-links 10 --min-table-rows 8` — `DOC OK`",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": []
+    },
+    "T004": {
+      "title": "元作品から離れた見た目の案が 3 つ、動く見本つきで並んでいる",
+      "min_check": "`python3 tools/check_doc.py docs/design/visual-direction.md --sections 元作品と避ける点,案A,案B,案C`",
+      "gate": "`bash tools/check_directions.sh` — 文書が `DOC OK`、`prototype/direction-{a,b,c}.html` の 3 枚があり、どれも試作の配色（`#9fe3c9` `#5fcaa5` `#e8433a`）を含まない",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": []
+    },
+    "T005": {
+      "title": "見た目の決め方（利用者が選ぶ）と既定の見た目が、文書に記録されている",
+      "min_check": "`grep -E '^見た目: 利用者が選ぶ' docs/design/visual-direction.md`",
+      "gate": "`grep -qE '^見た目: 利用者が選ぶ（[0-9]{4}-[0-9]{2}-[0-9]{2}' docs/design/visual-direction.md && grep -q 'themes/tile.css' docs/design/visual-direction.md && grep -q 'themes/glass.css' docs/design/visual-direction.md` — 終了コード 0",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": [
+        {
+          "date": "2026-10-30",
+          "field": "title",
+          "reason": "所有者の判断（2026-10-30）: 見た目は 1 つに絞らず、部品を使う人が選ぶ。所有者が案を 1 つ選ぶ形の Gate は問いが誤っていたので、選べる形と既定値の記録を確かめる形に替える"
+        },
+        {
+          "date": "2026-10-30",
+          "field": "min_check",
+          "reason": "所有者の判断（2026-10-30）: 見た目は 1 つに絞らず、部品を使う人が選ぶ。所有者が案を 1 つ選ぶ形の Gate は問いが誤っていたので、選べる形と既定値の記録を確かめる形に替える"
+        },
+        {
+          "date": "2026-10-30",
+          "field": "gate",
+          "reason": "所有者の判断（2026-10-30）: 見た目は 1 つに絞らず、部品を使う人が選ぶ。所有者が案を 1 つ選ぶ形の Gate は問いが誤っていたので、選べる形と既定値の記録を確かめる形に替える"
+        }
+      ]
+    },
+    "T006": {
+      "title": "部品の一覧と、共通の約束（データの渡し方・色・動き・配布の形）が決まっている",
+      "min_check": "`python3 tools/check_doc.py docs/design/components.md --sections 部品一覧,共通の約束,データの渡し方`",
+      "gate": "`python3 tools/check_doc.py docs/design/components.md --sections 部品一覧,共通の約束,データの渡し方,動きと負荷,配布の形,実装の順番,未決事項 --min-table-rows 12` — `DOC OK`",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": []
+    },
+    "T007": {
+      "title": "土台の検査が、pre-push の中身・未 push の commit・origin の向き先まで見ている",
+      "min_check": "`printf 'exit 0\\n' > /tmp/pp && chmod +x /tmp/pp && PRE_PUSH=/tmp/pp bash tools/check_setup.sh; [ $? = 1 ]` — 終了コード 1",
+      "gate": "`bash tools/check_setup_selftest.sh` — pre-push 欠落 / 中身が空 / 未 push の commit / origin が別のリポジトリ の 4 通りでそれぞれ `SETUP FAIL`、元の状態で `SETUP OK`",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": [
+        {
+          "date": "2026-10-28",
+          "field": "min_check",
+          "reason": "T007 監査（GATE_BROKEN）: /tmp/pp に実行権限が無く test -x だけで落ち、grep の判定まで届いていなかった。chmod +x を足して中身の検査を通す"
+        }
+      ]
+    },
+    "T008": {
+      "title": "文書の検査が、URL の実在と「調査で確認／推測」の印まで見ている",
+      "min_check": "`sed 's#https://[^ )]*#https://example.invalid/x#' docs/research/usage.md > /tmp/u.md && python3 tools/check_doc.py /tmp/u.md --check-urls; [ $? = 1 ]` — 終了コード 1",
+      "gate": "`bash tools/check_doc_selftest.sh` — 偽 URL のコピー / 印を消したコピーがそれぞれ FAIL、元の usage.md が `--check-urls --require-labels 調査で確認,推測` 付きで OK",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": []
+    },
+    "T009": {
+      "title": "市場調査の結論が、根拠のある値段の帯・払う層の根拠・集客の比較で書き直されている",
+      "min_check": "`! grep -q 'B 群に合わせて \\$49' docs/research/market.md` — 終了コード 0",
+      "gate": "`python3 tools/check_doc.py docs/research/market.md --sections 競合一覧,価格と収益の形,空いている場所,結論,反証の検討,集客の比較,出典 --min-links 10 --min-table-rows 8 && ! grep -q 'B 群に合わせて \\$49' docs/research/market.md && ! grep -q '\\$149〜\\$199 の買い切り' docs/research/market.md && grep -q 'Home Assistant.*有料の例' docs/research/market.md` — 終了コード 0",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": []
+    },
+    "T010": {
+      "title": "文書の検査が、表の行数と URL の数を節ごとに数え、埋め草の本文を落とす",
+      "min_check": "`grep -v -E '^\\| [A-E]:' docs/research/market.md > /tmp/m.md && python3 tools/check_doc.py /tmp/m.md --section-min-table-rows 競合一覧=8; [ $? = 1 ]` — 終了コード 1",
+      "gate": "`bash tools/test_check_doc.sh` — 競合表を消した写し / 出典節を URL なしにした写し / 結論を「あ」×40 にした写しがそれぞれ `DOC FAIL`、元の market.md が `DOC OK`",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": []
+    },
+    "T011": {
+      "title": "案C の見本が、背景を透明にしたとき WebGL を作らず描画も回さない",
+      "min_check": "`grep -qE \"get\\('bg'\\) === 'none'.*\\? *null\" prototype/direction-c.html` — 終了コード 0",
+      "gate": "`for x in a b c; do grep -qE \"get\\('bg'\\) === 'none'.*\\? *null\" prototype/direction-$x.html || exit 1; done && ! grep -q '丸印に少し重なっている' docs/design/visual-direction.md` — 終了コード 0",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": []
+    },
+    "T012": {
+      "title": "市場調査の Meld Studio の記述が確認できた範囲に絞られ、配信素材の値段の下限が表と結論で一致している",
+      "min_check": "`! grep -q '配信ソフトの機能として無料になりつつある' docs/research/market.md` — 終了コード 0",
+      "gate": "`! grep -q '配信ソフトの機能として無料になりつつある' docs/research/market.md && grep -q 'League of Legends' docs/research/market.md && grep -qE '^\\| \\$2\\.50' docs/research/market.md` — 終了コード 0",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": []
+    },
+    "T013": {
+      "title": "部品の設計が、T006 の監査で見つかった 12 の抜けと食い違いを閉じている",
+      "min_check": "`bash tools/check_design.sh | grep -c FAIL` — 0",
+      "gate": "`bash tools/check_design.sh` — 最終行が `DESIGN OK`",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": [
+        {
+          "date": "2026-10-29",
+          "field": "gate",
+          "reason": "T017: 所有者の判断で販売を計画から外し、有料の試しの「30 日」の数値も消えた。check_design.sh からその 1 項目を外した。Gate の文面は変えない"
+        },
+        {
+          "date": "2026-10-30",
+          "field": "gate",
+          "reason": "Gate が呼ぶ tools/check_design.sh の 1 項目を替えた。案C の書体 Barlow の有無を見ていたが、見た目がタイルとガラスに決まり（T005）書体は --cw-font 1 つになったため、配色の表に --cw-font の行があるかを見る形にした。項目数は変わらない"
+        }
+      ]
+    },
+    "T014": {
+      "title": "部品の設計に、実装者が推測で埋める所が残っていない（一時停止の伝え方・HA の状態の写し方・通知の細則・背景の種類の渡し方・負荷測定の手順・初期値の属性）",
+      "min_check": "`bash tools/check_design2.sh | grep -c FAIL` — 0",
+      "gate": "`bash tools/check_design2.sh` — 最終行が `DESIGN2 OK`（T013 の 17 項目も含む）",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": []
+    },
+    "T015": {
+      "title": "Home Assistant のカードの設定の形が、横棒の行と同じ項目名でそろっている",
+      "min_check": "`grep -E '^\\| .setConfig' docs/design/components.md | grep -q attribute` — 終了コード 0",
+      "gate": "`grep -E '^\\| .setConfig' docs/design/components.md | grep -q attribute && bash tools/check_design2.sh | tail -1 | grep -qx 'DESIGN2 OK'` — 終了コード 0",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": []
+    },
+    "T016": {
+      "title": "検査の道具が、ほかの作業の commit で赤にならず、空の約束の文を落とし、URL の拾い方が 1 か所にある",
+      "min_check": "`[ \"$(grep -c 'https?://\\[' tools/check_doc.py)\" = 1 ]` — 終了コード 0",
+      "gate": "`bash tools/test_tools_t016.sh` — 本物の repo に未 push の commit があっても check_setup_selftest が SELFTEST OK / 結論を「結論はまだ出ていない。調査を続けてから、この節に推奨案と理由と次の手を書く予定である。」にした market.md の写しが DOC FAIL / URL の正規表現が 1 か所 / test_check_doc.sh が SELFTEST OK",
+      "locked": "2026-10-28",
+      "passes": true,
+      "amendments": []
+    },
+    "T017": {
+      "title": "販売を計画から外す（調査の事実は残す）",
+      "min_check": "`! grep -qE '有料の試し|有料: 配信用|\\$15〜\\$29|最初の買い手|最初の売り場|案内頁' CHARTER.md docs/design/components.md docs/research/market.md && grep -q '販売はしない' CHARTER.md` — 終了コード 0",
+      "gate": "`! grep -qE '有料の試し|有料: 配信用|\\$15〜\\$29|最初の買い手|最初の売り場|案内頁' CHARTER.md docs/design/components.md docs/research/market.md && grep -q '販売はしない' CHARTER.md && bash tools/check_design2.sh | tail -1 | grep -qx 'DESIGN2 OK' && python3 tools/check_doc.py docs/research/market.md --sections 競合一覧,価格と収益の形,空いている場所,結論,反証の検討,集客の比較,出典 --min-links 10 --min-table-rows 8 | tail -1 | grep -q '^DOC OK'` — 終了コード 0",
+      "locked": "2026-10-29",
+      "passes": true
+    },
+    "T018": {
+      "title": "UI にこだわる人が実際に選んでいる見た目を調べ、案A/B/C と照合する",
+      "min_check": "`python3 tools/check_doc.py docs/research/look.md --sections 調べ方,人気の見た目,好まれる理由,案との照合,結論,出典 --min-links 15 --min-table-rows 10 --require-labels 調査で確認,推測 --section-min-table-rows 人気の見た目=8 | tail -1` — `DOC OK`",
+      "gate": "`python3 tools/check_doc.py docs/research/look.md --sections 調べ方,人気の見た目,好まれる理由,案との照合,結論,出典 --min-links 15 --min-table-rows 10 --require-labels 調査で確認,推測 --section-min-table-rows 人気の見た目=8 --check-urls --blocked-ok \"$(grep -v '^#' tools/blocked-hosts.txt | awk 'NF{print $1}' | paste -sd, -)\" | tail -1 | grep -q '^DOC OK' && grep -qE '^- 案[ABC]' docs/research/look.md` — 終了コード 0",
+      "locked": "2026-10-29",
+      "passes": true
+    },
+    "T019": {
+      "title": "T017 の監査で見つかった販売の名残 3 か所を直す",
+      "min_check": "`! grep -qE 'Booth.*試す|上位に置ける' docs/research/market.md && ! grep -q '販売か公開か' docs/research/usage.md && grep -q '販売はしない' docs/research/usage.md` — 終了コード 0",
+      "gate": "`! grep -qE 'Booth.*試す|上位に置ける' docs/research/market.md && ! grep -q '販売か公開か' docs/research/usage.md && grep -q '販売はしない' docs/research/usage.md && python3 tools/check_doc.py docs/research/market.md --sections 競合一覧,価格と収益の形,空いている場所,結論,反証の検討,集客の比較,出典 --min-links 10 --min-table-rows 8 | tail -1 | grep -q '^DOC OK' && python3 tools/check_doc.py docs/research/usage.md --sections 想定利用者,利用場面,組み込み方,求められる条件,設計への示唆,出典 --min-links 6 --min-table-rows 5 | tail -1 | grep -q '^DOC OK'` — 終了コード 0",
+      "locked": "2026-10-29",
+      "passes": true
+    },
+    "T020": {
+      "title": "work-rules.md の「hook が止める」を実際の動きに合わせ、T013 の項目数を直す",
+      "min_check": "`grep -q 'Gate の文面だけ' docs/work-rules.md && ! grep -q 'hook が止める）' docs/work-rules.md` — 終了コード 0",
+      "gate": "`grep -q 'Gate の文面だけ' docs/work-rules.md && ! grep -q 'hook が止める）' docs/work-rules.md && n=$(bash tools/check_design.sh | grep -c '^ok') && grep -q \"DESIGN OK（${n} 項目\" Tasks-archive.md` — 終了コード 0",
+      "locked": "2026-10-29",
+      "passes": true
+    },
+    "T021": {
+      "title": "T018 の監査の指摘 4 点を look.md に反映する",
+      "min_check": "`grep -q 'ココフォリア' docs/research/look.md && ! grep -q '配信用のお部屋素材' docs/research/look.md && grep -q 'TheGreatGildo/nerv-ui' docs/research/look.md && ! grep -q 'どれもスキ 1〜2' docs/research/look.md && grep -q '興味の数' docs/research/look.md` — 終了コード 0",
+      "gate": "`grep -q 'ココフォリア' docs/research/look.md && ! grep -q '配信用のお部屋素材' docs/research/look.md && grep -q 'TheGreatGildo/nerv-ui' docs/research/look.md && ! grep -q 'どれもスキ 1〜2' docs/research/look.md && grep -q '興味の数' docs/research/look.md && python3 tools/check_doc.py docs/research/look.md --sections 調べ方,人気の見た目,好まれる理由,案との照合,結論,出典 --min-links 15 --min-table-rows 10 --require-labels 調査で確認,推測 --section-min-table-rows 人気の見た目=8 --check-urls --blocked-ok \"$(grep -v '^#' tools/blocked-hosts.txt | awk 'NF{print $1}' | paste -sd, -)\" | tail -1 | grep -q '^DOC OK' && grep -qE '^- 案[ABC]' docs/research/look.md` — 終了コード 0",
+      "locked": "2026-10-29",
+      "passes": true
+    },
+    "T022": {
+      "title": "需要がどこにあるか（派手な画面で自分のデータを見たい人が、どこにどれだけいるか）を数字で調べる",
+      "min_check": "`python3 tools/check_doc.py docs/research/demand.md --sections 調べ方,需要のある場所,作りとの相性,見た目の傾向,結論,出典 --min-links 20 --min-table-rows 12 --require-labels 調査で確認,推測 --section-min-table-rows 需要のある場所=10 | tail -1` — `DOC OK`",
+      "gate": "`python3 tools/check_doc.py docs/research/demand.md --sections 調べ方,需要のある場所,作りとの相性,見た目の傾向,結論,出典 --min-links 20 --min-table-rows 12 --require-labels 調査で確認,推測 --section-min-table-rows 需要のある場所=10 --check-urls --blocked-ok \"$(grep -v '^#' tools/blocked-hosts.txt | awk 'NF{print $1}' | paste -sd, -)\" | tail -1 | grep -q '^DOC OK'` — 終了コード 0",
+      "locked": "2026-10-29",
+      "passes": true
+    },
+    "T023": {
+      "title": "T022 の監査の指摘を demand.md に反映し、結論の順位を数字に合わせる",
+      "min_check": "`grep -qE '^\\| [^|]*Rainmeter' docs/research/demand.md && grep -q 'api.npmjs.org/downloads/point/last-week/arwes' docs/research/demand.md && ! grep -q '状態を出す壁紙' docs/research/demand.md && ! grep -q '1081733658' docs/research/demand.md` — 終了コード 0",
+      "gate": "`grep -qE '^\\| [^|]*Rainmeter' docs/research/demand.md && grep -q 'api.npmjs.org/downloads/point/last-week/arwes' docs/research/demand.md && ! grep -q '状態を出す壁紙' docs/research/demand.md && ! grep -q '1081733658' docs/research/demand.md && python3 tools/check_doc.py docs/research/demand.md --sections 調べ方,需要のある場所,作りとの相性,見た目の傾向,結論,出典 --min-links 20 --require-labels 調査で確認,推測 --section-min-table-rows 需要のある場所=11 | tail -1 | grep -q '^DOC OK'` — 終了コード 0",
+      "locked": "2026-10-29",
+      "passes": true
+    },
+    "T024": {
+      "title": "所有者の決定「Home Assistant 向け（②）。自分用の道具（①）は後で」を CHARTER と設計に反映する",
+      "min_check": "`grep -q '2026-10-29 の判断は「Home Assistant 向け' CHARTER.md && awk '/^## 実装の順番/{p=1} p&&/ha-card/{h=NR} p&&/<cw-log>/{l=NR} END{exit !(h&&l&&h<l)}' docs/design/components.md && ! grep -q '案D と比べる\\|案A と案D を' docs/design/components.md` — 終了コード 0",
+      "gate": "`grep -q '2026-10-29 の判断は「Home Assistant 向け' CHARTER.md && awk '/^## 実装の順番/{p=1} p&&/ha-card/{h=NR} p&&/<cw-log>/{l=NR} END{exit !(h&&l&&h<l)}' docs/design/components.md && ! grep -q '案D と比べる\\|案A と案D を' docs/design/components.md && bash tools/check_design2.sh | tail -1 | grep -qx 'DESIGN2 OK' && bash tools/check_directions.sh | tail -1 | grep -qx 'DIRECTIONS OK'` — 終了コード 0",
+      "locked": "2026-10-29",
+      "passes": true,
+      "amendments": [
+        {
+          "date": "2026-11-04",
+          "field": "gate",
+          "reason": "所有者の判断 B（2026-11-04、T119）で方向を「HTML の部品集が本体」に改めた。T024 が反映した 2026-10-29 の判断は、CHARTER に経緯として残っていることを確かめる形にする"
+        },
+        {
+          "date": "2026-11-04",
+          "field": "min_check",
+          "reason": "gate と同じ理由（T119）"
+        }
+      ]
+    },
+    "T025": {
+      "title": "Home Assistant で人気の画面の見た目の特徴を数字の順に調べ、見た目の候補を 2〜3 個出す",
+      "min_check": "`python3 tools/check_doc.py docs/research/ha-look.md --sections 調べ方,人気の画面,共通する特徴,派手さの入れ方,候補,出典 --min-links 12 --min-table-rows 10 --require-labels 調査で確認,推測 --section-min-table-rows 人気の画面=8 | tail -1` — `DOC OK`",
+      "gate": "`python3 tools/check_doc.py docs/research/ha-look.md --sections 調べ方,人気の画面,共通する特徴,派手さの入れ方,候補,出典 --min-links 12 --min-table-rows 10 --require-labels 調査で確認,推測 --section-min-table-rows 人気の画面=8 --check-urls --blocked-ok \"$(grep -v '^#' tools/blocked-hosts.txt | awk 'NF{print $1}' | paste -sd, -)\" | tail -1 | grep -q '^DOC OK' && [ $(grep -c '^### 候補' docs/research/ha-look.md) -ge 2 ]` — 終了コード 0",
+      "locked": "2026-10-29",
+      "passes": true
+    },
+    "T026": {
+      "title": "動きの量の既定と CHARTER の目的の文を、Home Assistant 向けの方向に合わせる",
+      "min_check": "`grep -n '既定は' docs/design/components.md | grep -q calm && ! grep -q 'そうでなければ .full' docs/design/components.md && sed -n '/## 目的/,/## 問い/p' CHARTER.md | grep -q '切り替え'` — 終了コード 0",
+      "gate": "`grep -n '既定は' docs/design/components.md | grep -q calm && ! grep -q 'そうでなければ .full' docs/design/components.md && sed -n '/## 目的/,/## 問い/p' CHARTER.md | grep -q '切り替え' && bash tools/check_design2.sh | tail -1 | grep -qx 'DESIGN2 OK'` — 終了コード 0",
+      "locked": "2026-10-29",
+      "passes": true
+    },
+    "T027": {
+      "title": "Home Assistant 向けの試作: 候補1・候補2 と、それぞれを大胆に派手にした別版",
+      "min_check": "`bash tools/check_ha_proto.sh | tail -1` — `HA_PROTO OK`",
+      "gate": "`bash tools/check_ha_proto.sh | tail -1 | grep -qx 'HA_PROTO OK' && bash tools/check_directions.sh | tail -1 | grep -qx 'DIRECTIONS OK'` — 終了コード 0",
+      "locked": "2026-10-29",
+      "passes": true
+    },
+    "T028": {
+      "title": "T027 の監査の指摘を直す（再現の手順、検査の穴、派手版の防犯、透明時の描画）",
+      "min_check": "`bash tools/check_ha_proto.sh | tail -1 | grep -qx 'HA_PROTO OK' && ! grep -nE \"open '?prototype/[^ ]*[?]\" Tasks.md docs/design/visual-direction.md` — 終了コード 0",
+      "gate": "`bash tools/check_ha_proto.sh | tail -1 | grep -qx 'HA_PROTO OK' && ! grep -nE \"open '?prototype/[^ ]*[?]\" Tasks.md docs/design/visual-direction.md && grep -q 'data-frames' tools/check_ha_proto.sh && grep -q 'skew' tools/check_ha_proto.sh && grep -q 'id=..security' tools/check_ha_proto.sh` — 終了コード 0",
+      "locked": "2026-10-29",
+      "passes": true
+    },
+    "T029": {
+      "title": "URL の検査が回数制限で揺れて push が止まる問題を直す（429 などは間を空けて再試行、1 回の全体の検査の中では確かめ済みの URL を使い回す）",
+      "min_check": "`bash tools/test_check_doc_retry.sh | tail -1` — `SELFTEST OK`",
+      "gate": "`bash tools/test_check_doc_retry.sh | tail -1 | grep -qx 'SELFTEST OK' && bash tools/check_doc_selftest.sh | tail -1 | grep -qx 'SELFTEST OK' && grep -q CHECK_DOC_URL_CACHE tools/full_gate.py` — 終了コード 0",
+      "locked": "2026-10-29",
+      "passes": true
+    },
+    "T030": {
+      "title": "T029 の監査の指摘: 4xx を覚えないことと行ごとの照合を検査で固定し、自己検査の偽 URL を必ず 404 を返すものに替える",
+      "min_check": "`bash tools/test_check_doc_retry.sh | tail -1` — `SELFTEST OK`",
+      "gate": "`bash tools/test_check_doc_retry.sh | tail -1 | grep -qx 'SELFTEST OK' && grep -q 'missing.*cache\\|cache.*missing' tools/test_check_doc_retry.sh && grep -q 'oncex' tools/test_check_doc_retry.sh && ! grep -q medium.com tools/check_doc_selftest.sh && for i in 1 2 3; do bash tools/check_doc_selftest.sh | tail -1 | grep -qx 'SELFTEST OK' || exit 1; done` — 終了コード 0",
+      "locked": "2026-10-29",
+      "passes": true
+    },
+    "T031": {
+      "title": "開発の土台: ビルド、見本の頁、headless Chrome での部品の検査",
+      "min_check": "`npm run build && node tools/test_components.mjs base` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && test -s dist/cw.js && test -s dist/cw.iife.js && node tools/test_components.mjs base | tail -1 | grep -qx 'COMPONENTS OK' && ! node tools/test_components.mjs selftest-broken >/dev/null 2>&1` — 終了コード 0（壊れた見本では検査が落ちること）",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T032": {
+      "title": "`<cw-stage>`（拡大縮小・動きの量・一時停止・`bg`）と、見た目の CSS 2 枚（タイル・ガラス）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs stage` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs stage | tail -1 | grep -qx 'COMPONENTS OK' && grep -q -- '--cw-ground: *#121212' themes/tile.css && grep -q -- '--cw-ground: *linear-gradient' themes/glass.css` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T033": {
+      "title": "T031 の監査の指摘: 検査の仕組みが console のエラーと ESM 版の壊れを見落とす穴を塞ぐ",
+      "min_check": "`npm run build >/dev/null && bash tools/test_runner_selftest.sh` — 最終行が `RUNNER OK`",
+      "gate": "`npm run build >/dev/null && bash tools/test_runner_selftest.sh | tail -1 | grep -qx 'RUNNER OK' && node tools/test_components.mjs esm | tail -1 | grep -qx 'COMPONENTS OK' && ! grep -q \"version = '\" src/index.js` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T034": {
+      "title": "`<cw-panel>`（枠・名札・差し込み口・点いている状態）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs panel` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs panel base | tail -1 | grep -qx 'COMPONENTS OK'` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T035": {
+      "title": "`<cw-stat>`・`<cw-status>`・`<cw-clock>` と、舞台の一時停止・動きの量を受け取る共通部分",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs values` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs values stage panel | tail -1 | grep -qx 'COMPONENTS OK'` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T036": {
+      "title": "T032 の監査の指摘: 一時停止の伝え方を設計に合わせ、`bg` と大きさの追従と配色の値を検査で固定する",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs stage && node tools/check_theme_tokens.mjs` — 最終行が `COMPONENTS OK` と `TOKENS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs stage values | tail -1 | grep -qx 'COMPONENTS OK' && node tools/check_theme_tokens.mjs | tail -1 | grep -qE '^TOKENS OK \\(3[0-9]\\)$' && grep -q 'members' docs/design/components.md && ! grep -q 'MutationObserver. で見張る' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T037": {
+      "title": "`<cw-bars>`（横棒）と `<cw-chart>`（折れ線）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs charts` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs charts values | tail -1 | grep -qx 'COMPONENTS OK'` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T038": {
+      "title": "Home Assistant のカード `cw-ha-card`（`integrations/ha-card.js`）。見た目と動きはカードの設定で選ぶ",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs hacard` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && test -s dist/cw-ha-card.js && node tools/test_components.mjs hacard charts values | tail -1 | grep -qx 'COMPONENTS OK' && grep -q 'look' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T039": {
+      "title": "`<cw-log>`・`<cw-feed>`・`<cw-ticker>`（追加して流す部品）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs streams` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs streams values | tail -1 | grep -qx 'COMPONENTS OK'` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T040": {
+      "title": "`<cw-background kind=\"aura\">`（灯りの色で地がゆっくり染まる）と、舞台がそれを作る決まり（`bg` と `motion`）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs background` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs background stage values | tail -1 | grep -qx 'COMPONENTS OK'` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T041": {
+      "title": "T035 の監査の指摘: 値の型の扱いを決めて固定し、状態・時計・動きの量の検査の穴を塞ぐ",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs values` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs values stage | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs values | grep -c '^ok   values: \\(value coercion\\|status \\|reduced motion\\|warn-above is strict\\|no thresholds never warn\\|rolling columns\\|clock shows date\\|inherited names\\|own resume under\\)' | awk '$1>=16{exit 0}{exit 1}' && grep -q '数値の文字列' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T042": {
+      "title": "T038 の監査の指摘: カードの状態の言葉・欠けた値・設定の検査・高さの申告を直し、検査の穴を塞ぐ",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs hacard` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs hacard values | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs hacard | grep -c '^ok   hacard: \\(word \\|missing \\|unchanged \\|order \\|registry\\|motion is checked\\|card size matches\\|label reaches\\)' | awk '$1>=16{exit 0}{exit 1}' && grep -q '同じ画面にタイルとガラスのカードを並べられる' docs/design/components.md && grep -q '施錠' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T043": {
+      "title": "T034・T037 の監査の指摘: 枠・横棒・折れ線の検査の穴を塞ぎ、設計の部品一覧と part の名前を実装に合わせる",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs panel charts` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs panel charts | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs panel charts | grep -c '^ok   \\(panel: \\(sublabel is text\\|fills a plain block parent\\|tile border\\|glass border\\|glass on state\\|sublabel alone\\)\\|charts: \\(min/max set the scale\\|auto range touches\\|paused queue keeps at most\\|paused data replace is held\\|set data keeps the last\\|over max clamps\\|roles are\\)\\)' | grep -qx 13 && grep -q '横棒の .fill.' docs/design/components.md && grep -q 'cw-chart.*置き換え' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": [
+        {
+          "date": "2026-10-30",
+          "field": "gate",
+          "reason": "Gate の中に逆引用符を書いたため、full_gate.py が最初の逆引用符の組までしか読まず、コマンドが途中で切れていた。同じ文書の同じ語を、逆引用符を使わない正規表現で確かめる形に替えた（緩めてはいない）"
+        }
+      ]
+    },
+    "T044": {
+      "title": "`<cw-screens>` と `<cw-screen>`（画面の切り替え。派手な動きでは灯りの色が広がって入れ替わる）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs screens` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs screens stage | tail -1 | grep -qx 'COMPONENTS OK'` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T045": {
+      "title": "`<cw-source>`（WebSocket・SSE・一定間隔の取得・postMessage から決まった形の通知を受けて部品に配る。別ファイル）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs source` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && test -s dist/cw-source.js && ! grep -q 'cw-source' dist/cw.js && node tools/test_components.mjs source base | tail -1 | grep -qx 'COMPONENTS OK' && bash tools/test_runner_selftest.sh | tail -1 | grep -qx 'RUNNER OK'` — 終了コード 0（本体に接続のコードが入っていないこと）",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T046": {
+      "title": "試作の家の画面を、部品の組み合わせだけで作り直す（`demo/home.html`）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs home` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs home | tail -1 | grep -qx 'COMPONENTS OK' && ! grep -qE '<canvas|<svg|getContext|innerHTML' demo/home.html && ! grep -qiE '9fe3c9|5fcaa5|e8433a|writing-mode|text-stroke' demo/home.html` — 終了コード 0（絵を自前で描かず、元作品の特徴を含まない）",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T047": {
+      "title": "負荷の測定（`tools/perf.mjs`）: 派手・静か・動きなし・背景なしの CPU 時間と 1 コマの時間を測り、`docs/perf/` に残す",
+      "min_check": "`npm run build >/dev/null && node tools/perf.mjs --seconds 3 --out /dev/null` — 最終行が `PERF OK`",
+      "gate": "`npm run build >/dev/null && f=$(mktemp) && node tools/perf.mjs --seconds 6 --out $f | tail -1 | grep -qx 'PERF OK' && grep -c '^| \\(full\\|calm\\|off\\|bg=none\\) |' $f | grep -qx 4` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": [
+        {
+          "date": "2026-10-30",
+          "field": "gate",
+          "reason": "Gate が commit 済みの docs/perf/latest.md を走るたびに書き換え、push のたびに作業の木が汚れていた。書き先を一時ファイルに替えただけで、確かめる中身（PERF OK と 4 場面の行）は同じ"
+        }
+      ]
+    },
+    "T048": {
+      "title": "T039・T040 の監査の指摘: ログ・発言・帯・背景の検査の穴を塞ぎ、設計を実装に合わせる",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs streams background` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs streams background stage values | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs streams background | grep -c '^ok   \\(streams: \\(log polite when asked\\|levels ignore case\\|default lines 30\\|default items 4\\|feed same id replaces\\|paused feed holds\\|ticker speed within 25%\\|calm ticker offset stays 0\\|paused ticker keeps its place\\)\\|background: \\(theme kind decides\\|fps=10 gives 8 to 11 frames\\|paused keeps the last frame\\|level sets strength\\|reduced motion makes no auto aura\\|reduced motion draws once\\|removed background stops drawing\\)\\)' | grep -qx 16 && ! grep -q 'WebGL' docs/design/components.md && grep -q 'live.*polite' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T049": {
+      "title": "T044・T045 の監査の指摘: 画面の切り替えの `current` と連続の切り替え、通知の全決まり・WebSocket・繋ぎ直しの検査、古い dist で Gate が通る穴を塞ぐ",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs screens source` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs screens source base | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs screens source | grep -c '^ok   \\(screens: \\(current attribute\\|last show wins\\|children at once\\|digits in an input\\|digits in contenteditable\\|modifier keys\\|key 2\\|brightest regardless of order\\|calm fade is 0 to 1 in 200ms\\|wipe is visible\\)\\|source: \\(rule \\|websocket \\|backoff \\|interval \\|origin list\\|no origin attribute\\|error detail\\|console.warn\\|link mark on itself\\|ids within 500\\|broken selector\\)\\)' | awk '$1>=30{exit 0}{exit 1}' && grep -q rmSync tools/build.mjs && bash tools/test_runner_selftest.sh | tail -1 | grep -qx 'RUNNER OK'` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T050": {
+      "title": "間取りの立体図の部品 <cw-floorplan> がある（試作の派手版の中心を部品にする）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs floorplan` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs floorplan base | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs floorplan | grep -c '^ok   floorplan: \\(lit room floor takes\\|glow\\|focus outline\\|flows only in full\\|still in calm\\|paused\\|resume applies\\|cw-room\\|keyboard\\|person moves\\|away\\|reduced motion\\)' | awk '$1>=12{exit 0}{exit 1}' && grep -q 'cw-floorplan' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T051": {
+      "title": "電気の流れの部品 <cw-flow> がある（粒の数と速さが電力に比例する）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs flow` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs flow floorplan base | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs flow | grep -c '^ok   flow: \\(more power\\|faster\\|no dots\\|runs only in full\\|still dots in calm\\|paused\\|resume applies\\|node value\\|wire width\\|missing node\\|reduced motion\\)' | awk '$1>=11{exit 0}{exit 1}' && grep -q 'cw-flow' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T052": {
+      "title": "家の見本に派手版 variant=bold を戻す（立体図・注目の部屋・電気の流れ・自動の切り替え）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs homebold` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs homebold home floorplan flow | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs homebold | grep -c '^ok   homebold: \\(tile/full\\|glass/full\\|tile/calm\\|focus moves\\|focus panel\\|room click\\|flow dots\\|auto switch\\|no auto switch\\|paused\\|quiet stays\\)' | awk '$1>=16{exit 0}{exit 1}' && grep -q 'variant=bold' README.md` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T053": {
+      "title": "Home Assistant のカードで立体図と電気の流れを使う（kind: floorplan / flow）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs hahouse` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs hahouse hacard floorplan | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs hahouse | grep -c '^ok   hahouse: \\(rooms throws\\|nodes throws\\|links throws\\|light state\\|light colour\\|brightness\\|temperature note\\|person at home\\|tap calls light.toggle\\|negative link\\|node unit\\|card size\\|unchanged\\|text grows\\)' | awk '$1>=14{exit 0}{exit 1}' && grep -q 'kind: floorplan' README.md` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T054": {
+      "title": "T051 の監査の指摘: 静か版で開いた時の粒、粒の数と速さの比、向き、scale、名前の位置、端数の丸めを検査で固定する",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs flow | grep -c '^ok   flow: \\(calm from load\\|proportional\\|dots run from\\|scale sets\\|label placement\\|fractional\\)'` — 7 以上",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs flow | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs flow | grep -c '^ok   flow: \\(calm from load\\|proportional\\|dots run from\\|scale sets\\|label placement\\|fractional\\)' | awk '$1>=7{exit 0}{exit 1}'` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T055": {
+      "title": "T050 の監査の指摘: 床と光の色が灯りの色に従う、点線の枠が見える、灯りの点が息をする、一時停止中の focus、点灯の読み上げ、動きを減らす時の遷移を検査で固定する",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs floorplan` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs floorplan homebold | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs floorplan | grep -c '^ok   floorplan: \\(floor hue follows\\|floor follows level\\|glow colour is\\|focus outline is dashed\\|lamps breathe\\|focus set while paused\\|lit room label\\|reduced motion removes transitions\\)' | awk '$1==8{exit 0}{exit 1}' && test \"$(grep -c \"motionLevel === 'full'\" src/floorplan.js)\" = 1` — 終了コード 0",
+      "locked": "2026-10-30",
+      "passes": true,
+      "amendments": []
+    },
+    "T056": {
+      "title": "家の見本の右上に、構成・見た目・動きの切り替えボタンを置く。macOS の open は file URL の ? 以降を捨てるので、URL の指定に頼らない",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs homepick` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs homepick home homebold | tail -1 | grep -qx 'COMPONENTS OK' && ! grep -qE '<canvas|<svg|getContext|innerHTML' demo/home.html && ! grep -qE 'open -a.*\\.html\\?' README.md docs/design/visual-direction.md` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": [
+        {
+          "date": "2026-10-31",
+          "field": "gate",
+          "reason": "full_gate.py は最初のバッククォートの組を Gate として読むので、正規表現の中のバッククォートで Gate が途中で切れていた。README と設計書に「open -a に ? 付きの .html を渡す行が無い」ことを、バッククォートを使わない正規表現で確かめる形に書き直す"
+        }
+      ]
+    },
+    "T057": {
+      "title": "3 つ目の見た目「ゲーム」（themes/game.css）。枠が傾き、硬い影と斜めの見出しの帯が付き、数字と見出しが幅の広い太字になる。タイルとガラスは変えない。設計書の「避ける点」を所有者の判断 A に合わせて狭める",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs game` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs game panel values | tail -1 | grep -qx 'COMPONENTS OK' && node tools/check_theme_tokens.mjs game | tail -1 | grep -q '^TOKENS OK' && node tools/check_theme_tokens.mjs | tail -1 | grep -q '^TOKENS OK' && ! grep -qiE '9fe3c9|5fcaa5|e8433a|writing-mode|text-stroke|Anton|Playfair|Dela' themes/game.css && grep -q '2026-10-31 所有者の判断 A' docs/design/visual-direction.md` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T058": {
+      "title": "T057 の監査の指摘: タイルとガラスの見出しと数字が変わらないこと、ぼかしのない影、時計の幅、見出しの文字色、点灯中の帯、空の見出し、禁止色を rgb で、配色表の突き合わせの自己検査、書体の通信に頼らない",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs game` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs game panel values | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs game | grep -c '^ok   game: \\(tile keeps\\|glass keeps\\|shadow has no blur\\|clock is wide\\|label text colour\\|lit panel label\\|empty label\\|no banned colour\\)' | awk '$1==8{exit 0}{exit 1}' && bash tools/selftest_tokens.sh | tail -1 | grep -qx 'SELFTEST OK'` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T059": {
+      "title": "<cw-ring>: 円に沿って回る文字と、逆に回る目盛り。文字は円を埋めるまで繰り返し、読み上げは 1 回。動きが full のときだけ回り、一時停止で止まる",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs ring` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs ring | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs ring | grep -c '^ok   ring: \\(full: the text ring turns\\|full: the ticks turn\\|the text repeats\\|read aloud once\\|paused: stays put\\|resumed\\|calm: still\\|off: still\\|outside a stage\\|text is shown as text\\)' | awk '$1==10{exit 0}{exit 1}' && grep -q 'cw-ring' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T060": {
+      "title": "ゲームの見た目の動き: 舞台の後ろを斜めの光の帯が流れる背景（kind=streaks）と、画面切り替えで斜めの板が横切る演出（--cw-wipe: slash）。タイルとガラスは今のまま",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs gamefx` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs gamefx background screens stage | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs gamefx | grep -c '^ok   gamefx: \\(game full: the stage makes streaks\\|game calm\\|streaks: bands\\|streaks: in the accent\\|streaks drift\\|streaks still\\|streaks stop\\|tile full keeps\\|game: the switch is a slanted\\|game: screens swap\\|tile keeps the round\\)' | awk '$1==11{exit 0}{exit 1}' && node tools/check_theme_tokens.mjs game | tail -1 | grep -q '^TOKENS OK'` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T061": {
+      "title": "家の見本と Home Assistant のカードで見た目「ゲーム」を選べるようにする。派手版の構成では、枠が左右に傾き、間取り図の後ろで輪が回り、注目の部屋の名前が巨大になり、左の列の今の画面が斜めの帯になる",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs homegame` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs homegame homepick home homebold hacard hahouse | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs homegame | grep -c '^ok   homegame: ' | awk '$1>=12{exit 0}{exit 1}' && ! grep -qE '<canvas|<svg|getContext|innerHTML' demo/home.html && ! grep -qiE '9fe3c9|5fcaa5|e8433a|writing-mode|text-stroke' demo/home.html` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T062": {
+      "title": "T059 の監査の指摘: 目盛りが時間とともに逆に回ること、fps の上限、繰り返し回数が測った値であること、書体が変わったら測り直すことを検査で固定する。ゲームで字間が 17% 詰まるのを、余りを字間で吸収して 0.9〜1.15 に収める。小さい輪の目盛りを間引く",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs ring` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs ring homegame | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs ring | grep -c '^ok   ring: \\(ticks keep turning\\|fps cap\\|short text repeats more\\|remeasures when the font changes\\|spacing within 0.9-1.15 (game)\\|spacing within 0.9-1.15 (tile)\\|small ring ticks spaced\\)' | awk '$1==7{exit 0}{exit 1}'` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T063": {
+      "title": "家の見本の切り替えを、雰囲気 4 つ（シンプル・ガラス・派手・ゲーム）と動き 3 つの 2 列にまとめる。雰囲気は構成と見た目の組。選び直すと動きはその雰囲気の既定に戻る",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs homepick` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs homepick homegame home homebold | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs homepick | grep -c '^ok   homepick: moods: ' | awk '$1==9{exit 0}{exit 1}' && ! grep -qE '<canvas|<svg|getContext|innerHTML' demo/home.html && grep -q 'シンプル' README.md` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T064": {
+      "title": "よく使われる Home Assistant のカードを星の数で種類ごとに並べ、部品集に無い種類を作る順番にする",
+      "min_check": "`python3 tools/check_doc.py docs/research/cards.md --sections 調べ方,種類ごとの需要,作る順番,出典` — `DOC OK`",
+      "gate": "`python3 tools/check_doc.py docs/research/cards.md --sections 調べ方,種類ごとの需要,作る順番,出典 --min-links 15 --min-table-rows 10 && grep -q '21\\. .<cw-switch>' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T065": {
+      "title": "<cw-switch>: 押すと点け消しし、明るさを滑らせる部品。押す・キー・滑らせるで事件を出し、一時停止中の値を保ち、動きの量と見た目「ゲーム」で表情が変わる",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs switch` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs switch | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs switch | grep -c '^ok   switch: ' | awk '$1>=14{exit 0}{exit 1}' && grep -q 'cw-switch' README.md && grep -q 'switch.html' demo/index.html` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T066": {
+      "title": "Home Assistant のカードの kind: switch。灯りの点け消しと明るさ、色、使えない状態を写し、押す・滑らせるで HA のサービスを呼ぶ",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs haswitch` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs haswitch hacard hahouse | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs haswitch | grep -c '^ok   haswitch: ' | awk '$1>=10{exit 0}{exit 1}' && grep -q 'kind: switch' README.md` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T067": {
+      "title": "家の見本に 3 枚目の画面「照明」。部屋ごとの <cw-switch> が部屋の点灯と明るさを変え、自動の入れ替わりはこの画面から離さない",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs homelights` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs homelights home homebold homegame homepick | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs homelights | grep -c '^ok   homelights: ' | awk '$1>=10{exit 0}{exit 1}' && ! grep -qE '<canvas|<svg|getContext|innerHTML' demo/home.html` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T068": {
+      "title": "T065 の監査の穴: 止まっている間の操作、離した後の表示、level の範囲、color、止まっている間の息、帯の読み上げ、矢印キー、動かしている帯を外の値で動かさない",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs switch` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs switch | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs switch | grep -c '^ok   switch: holes: ' | awk '$1>=8{exit 0}{exit 1}' && grep -q '矢印' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T069": {
+      "title": "demo/index.html を部品のカタログにする。設計の表の部品ごとに動く見本・説明・見本の頁へのリンクを置き、見た目と動きをその場で切り替える",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs catalog` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs catalog | grep -c '^ok   catalog: ' | awk '$1>=8{exit 0}{exit 1}' && grep -q 'カタログ' README.md` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T070": {
+      "title": "<cw-camera>: 静止画を一定間隔で取り直すか動画を流し、名前と最後の映像の時刻を重ねる。届かなければ映像なしと出す。止めると取り直さない。多めでは録画の印が点滅する",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs camera` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs camera catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs camera | grep -c '^ok   camera: ' | awk '$1>=12{exit 0}{exit 1}' && grep -q 'cw-camera' README.md` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T071": {
+      "title": "カードの kind: camera（entity_picture を映し、token が替われば取り直す）と、家の見本の 4 枚目の画面「カメラ」",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs hacamera homecams` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs hacamera homecams hacard haswitch homelights homebold home | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs hacamera homecams | grep -c '^ok   \\(hacamera\\|homecams\\): ' | awk '$1>=10{exit 0}{exit 1}' && grep -q 'kind: camera' README.md && ! grep -qE '<canvas|<svg|getContext|innerHTML' demo/home.html` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T072": {
+      "title": "<cw-media>: 曲名・アーティスト・ジャケット・進み具合を出し、再生中は位置が進む。ボタンで cw-media、音量で cw-volume。止めると時計が止まり新しい値は待つ。多めでは再生中に棒が踊る",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs media` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs media catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs media | grep -c '^ok   media: ' | awk '$1>=14{exit 0}{exit 1}' && grep -q 'cw-media' README.md` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T073": {
+      "title": "T070 の監査の穴: 途切れた後の古い絵と時刻、遅れて届く古い絵、届くまで前の絵を残す、?token= の住所、止めている間の点滅、外した後の取り直し、動画の時刻、狭い枠の時刻、見本の重なり",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs camera` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs camera | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs camera | grep -c '^ok   camera: holes: ' | awk '$1>=8{exit 0}{exit 1}'` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T074": {
+      "title": "カードの kind: media（media_player の曲・位置・音量を写し、ボタンと音量で HA のサービスを呼ぶ）と、家の見本の「再生中」の枠を <cw-media> にする",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs hamedia homemedia` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs hamedia homemedia hacard home homebold homegame | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs hamedia homemedia | grep -c '^ok   \\(hamedia\\|homemedia\\): ' | awk '$1>=10{exit 0}{exit 1}' && grep -q 'kind: media' README.md && ! grep -qE '<canvas|<svg|getContext|innerHTML' demo/home.html` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T075": {
+      "title": "<cw-agenda>: 今日からの予定を日ごとの見出しで並べ、終わったものは消し、進行中にいま、今日の次の予定にあと何分を出す。days と max で絞り、止めると新しい予定は待つ",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs agenda` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs agenda catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs agenda | grep -c '^ok   agenda: ' | awk '$1>=15{exit 0}{exit 1}' && grep -q 'cw-agenda' README.md` — 終了コード 0",
+      "locked": "2026-10-31",
+      "passes": true,
+      "amendments": []
+    },
+    "T076": {
+      "title": "<cw-weather>: いまの気温・空模様（HA の言葉を日本語に）・最高最低・湿度・風と、数日の予報。空模様ごとの絵は多めで動く。止めると新しい値は待つ",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs weather` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs weather catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs weather | grep -c '^ok   weather: ' | awk '$1>=12{exit 0}{exit 1}' && grep -q 'cw-weather' README.md` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T077": {
+      "title": "T072 の監査の穴（長さ超え、止めている間と再開後の時計、idle と off、知らない state、止めている間の棒、要素自身の paused、斜めのボタン、フォーカス枠）と、狭い枠の崩れ、負荷で揺れる位置の検査",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs media` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs media | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs media | grep -c '^ok   media: \\(holes\\|narrow\\): ' | awk '$1>=12{exit 0}{exit 1}' && seq 4 | xargs -P4 -I{} sh -c 'node tools/test_components.mjs media | tail -1' | grep -cx 'COMPONENTS OK' | awk '$1==4{exit 0}{exit 1}'` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T078": {
+      "title": "<cw-dial>: 270 度の円弧に値、真ん中に数字。target があれば印と − + で step ずつ動かし cw-target を出す。警告の色、止めると値は待つ、多めでは円弧がなめらかに伸びる",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs dial` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs dial catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs dial | grep -c '^ok   dial: ' | awk '$1>=14{exit 0}{exit 1}' && grep -q 'cw-dial' README.md` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T079": {
+      "title": "カードの kind: agenda（calendar API を 5 分ごと）・kind: weather（いまの値と予報の購読、風は m/s に直す）・kind: dial（climate なら設定値と − ＋、sensor なら値だけ）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs hamore` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs hamore hacard haswitch hacamera hamedia | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs hamore | grep -c '^ok   hamore: ' | awk '$1>=12{exit 0}{exit 1}' && grep -q 'kind: agenda' README.md && grep -q 'kind: weather' README.md && grep -q 'kind: dial' README.md` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T080": {
+      "title": "家の見本に 5 枚目の画面「今日」。天気・予定・空調の目盛りを両方の構成で出し、空調の − ＋ が出来事に残る。自動の入れ替わりはこの画面から離さない",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs homeday` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs homeday home homebold homegame homelights homecams homemedia | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs homeday | grep -c '^ok   homeday: ' | awk '$1>=7{exit 0}{exit 1}' && ! grep -qE '<canvas|<svg|getContext|innerHTML' demo/home.html` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T081": {
+      "title": "T076 の監査の穴（絵の区別、unavailable と null、unit、欠けた値の –、数の time、止めている間と calm の絵、role、ゲームの太さ、時間帯）と、狭い枠とガラスの雲",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs weather` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs weather | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs weather | grep -c '^ok   weather: \\(holes\\|narrow\\): ' | awk '$1>=14{exit 0}{exit 1}' && TZ=Pacific/Kiritimati node tools/test_components.mjs weather | tail -1 | grep -qx 'COMPONENTS OK' && TZ=America/Los_Angeles node tools/test_components.mjs weather | tail -1 | grep -qx 'COMPONENTS OK'` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T082": {
+      "title": "T075 の監査の穴（境目の時刻、既定値、読み上げ、30 秒の見直しと止めている間、終わりの無い予定、ISO 文字列）と、日付だけの文字列を現地の 0 時で読む、真夜中前に揺れる検査、狭い枠、前日から続く予定",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs agenda` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs agenda | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs agenda | grep -c '^ok   agenda: \\(holes\\|narrow\\): ' | awk '$1>=14{exit 0}{exit 1}' && TZ=America/New_York node tools/test_components.mjs agenda | tail -1 | grep -qx 'COMPONENTS OK' && CW_FAKE_TIME=23:50 node tools/test_components.mjs agenda | tail -1 | grep -qx 'COMPONENTS OK' && grep -q 'CW_FAKE_TIME' tools/test_components.mjs` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T083": {
+      "title": "T078 の監査の穴（下限、刻み、送らない条件、warn-below と境目、警告の色、印の位置と角度、はみ出し、aria、フォーカス枠、ゲーム、NaN、step）と、上限でのフォーカス、低い枠、押した直後に届いた値、設定値の桁",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs dial` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs dial | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs dial | grep -c '^ok   dial: \\(holes\\|keys\\|narrow\\): ' | awk '$1>=16{exit 0}{exit 1}'` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T084": {
+      "title": "全体の検査で、同じ入力の検査を 2 度回さない（T077 は除く）",
+      "min_check": "`bash tools/test_gate_cache.sh` — 最終行が `GATECACHE OK`",
+      "gate": "`bash tools/test_gate_cache.sh | tail -1 | grep -qx 'GATECACHE OK' && bash tools/test_runner_selftest.sh | tail -1 | grep -qx 'RUNNER OK'` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T085": {
+      "title": "カードの取り込みを Home Assistant の実際の値の形に合わせる（温度の単位、風速の単位、予報の種類、entity_picture_local、buffering と on、非対応のボタン）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs hareal` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs hareal hamore hamedia | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs hareal | grep -c '^ok   hareal: ' | awk '$1>=14{exit 0}{exit 1}' && grep -q 'temperature_unit' integrations/ha-card.js` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T086": {
+      "title": "T085 の監査の穴（Beaufort の端と丸め、夜から始まる日、PAUSE だけ、°C の刻み、単位だけの変化、row.unit、再現の頁）と、1 時間ごとの日の絵、夕方の今日の最高最低、購読し直し、Home Assistant の時間帯での日の区切り",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs hareal` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs hareal hamore hamedia | tail -1 | grep -qx 'COMPONENTS OK' && TZ=America/Los_Angeles node tools/test_components.mjs hareal | tail -1 | grep -qx 'COMPONENTS OK' && TZ=Pacific/Kiritimati node tools/test_components.mjs hareal | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs hareal | grep -c '^ok   hareal: holes: ' | awk '$1>=12{exit 0}{exit 1}' && grep -q 'twice_daily' demo/ha-card.html && grep -q 'entity_picture_local' demo/ha-card.html && grep -q 'Beaufort' demo/ha-card.html` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T087": {
+      "title": "部品の検査を同時に回し（CW_JOBS）、全体の検査の最初に 1 回だけ回す。使い回しの鍵に頁と部品の束を入れ、全体の検査の使い回しを実際に走らせて確かめる",
+      "min_check": "`bash tools/test_parallel.sh` — 最終行が `PARALLEL OK`",
+      "gate": "`bash tools/test_parallel.sh | tail -1 | grep -qx 'PARALLEL OK' && bash tools/test_gate_cache.sh | tail -1 | grep -qx 'GATECACHE OK' && bash tools/test_runner_selftest.sh | tail -1 | grep -qx 'RUNNER OK' && npm run build >/dev/null && CW_JOBS=6 node tools/test_components.mjs source homebold media camera home ring | tail -1 | grep -qx 'COMPONENTS OK'` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T088": {
+      "title": "全体の検査で、行を同時に回し（時間を測る T047・T077・T087 は単独）、最初の一括は行の検査に出てくる部品だけにする",
+      "min_check": "`bash tools/test_parallel.sh` — 最終行が `PARALLEL OK`",
+      "gate": "`bash tools/test_parallel.sh | tail -1 | grep -qx 'PARALLEL OK' && bash tools/test_parallel.sh | grep -c '^ok   \\(the start runs only\\|rows run side by side\\|solo rows run alone\\|rows are reported in lock order\\)' | grep -qx 4` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T089": {
+      "title": "T086 の監査の不具合（読めない日時で予報全体が空、古い購読の上書き）と穴（昼の境目、同点、最初の日が昨日、1 時間ごとの昼の最低、0 時の日ごと、不正な時間帯、時間帯の変更）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs hareal` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs hareal hamore | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs hareal | grep -c '^ok   hareal: holes: ' | awk '$1>=22{exit 0}{exit 1}' && node tools/test_components.mjs hareal | grep -q '^ok   hareal: holes: an unparsable datetime is skipped' && node tools/test_components.mjs hareal | grep -q '^ok   hareal: holes: a stale subscription cannot overwrite the new forecast' && TZ=America/New_York node tools/test_components.mjs hareal | tail -1 | grep -qx 'COMPONENTS OK'` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T090": {
+      "title": "T087 の監査の穴（鍵の dist と themes、dist なしで落ちる、2 本同時の判定の余裕）",
+      "min_check": "`bash tools/test_parallel.sh` — 最終行が `PARALLEL OK`",
+      "gate": "`rm -rf dist && bash tools/test_parallel.sh | tail -1 | grep -qx 'PARALLEL OK' && bash tools/test_parallel.sh | grep -c '^ok   a changed \\(demo file\\|bundle\\|theme\\) is run again' | grep -qx 3 && for i in 1 2 3; do bash tools/test_parallel.sh | tail -1 | grep -qx 'PARALLEL OK' || exit 1; done` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T091": {
+      "title": "待ち時間の長い検査（再生、家の見本の派手版、カメラ）を Chrome の仮の時間で回す",
+      "min_check": "`bash tools/test_virtual_time.sh` — 最終行が `VIRTUALTIME OK`",
+      "gate": "`bash tools/test_virtual_time.sh | tail -1 | grep -qx 'VIRTUALTIME OK' && test $(grep -l '^export const virtualTime = true' tools/tests/media.mjs tools/tests/homebold.mjs tools/tests/camera.mjs | wc -l) -eq 3 && npm run build >/dev/null && s=$(date +%s) && CW_JOBS=1 node tools/test_components.mjs media homebold camera | tail -1 | grep -qx 'COMPONENTS OK' && test $(( $(date +%s) - s )) -lt 15` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T092": {
+      "title": "全体の検査で、読むファイルが前に通ったときから変わっていない行は飛ばす（T001 は毎回、FULL_GATE_ALL=1 で全部）",
+      "min_check": "`bash tools/test_gate_skip.sh` — 最終行が `GATESKIP OK`",
+      "gate": "`bash tools/test_gate_skip.sh | tail -1 | grep -qx 'GATESKIP OK' && bash tools/test_gate_skip.sh | grep -c '^ok   ' | awk '$1>=8{exit 0}{exit 1}' && bash tools/test_parallel.sh | tail -1 | grep -qx 'PARALLEL OK'` — 終了コード 0",
+      "locked": "2026-11-01",
+      "passes": true,
+      "amendments": []
+    },
+    "T093": {
+      "title": "次に作る部品の需要を数字で調べ（docs/research/cards2.md）、components.md の実装の順番 27 以降を決める",
+      "min_check": "`python3 tools/check_doc.py docs/research/cards2.md --sections 調べ方,種類ごとの需要,作る順番,出典 --min-links 15 --min-table-rows 12 --require-labels 調査で確認,推測` — 最終行が `DOC OK`",
+      "gate": "`python3 tools/check_doc.py docs/research/cards2.md --sections 調べ方,種類ごとの需要,作る順番,出典 --min-links 15 --min-table-rows 12 --require-labels 調査で確認,推測 | tail -1 | grep -q '^DOC OK' && grep -q '^27\\. ' docs/design/components.md && bash tools/check_design.sh | tail -1 | grep -qx 'DESIGN OK'` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T094": {
+      "title": "<cw-battery>（電池の残りを少ない順に並べ、少ないものを目立たせる）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs battery` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs battery catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs battery | grep -c '^ok   battery: ' | awk '$1>=14{exit 0}{exit 1}' && grep -q 'cw-battery' README.md && grep -q '27\\. .<cw-battery>' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T095": {
+      "title": "カードに kind: battery（entities を書けばそれだけ、書かなければ device_class が battery の機器を全部集める）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs habattery` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs habattery hacard hamore | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs habattery | grep -c '^ok   habattery: ' | awk '$1>=9{exit 0}{exit 1}' && grep -q 'kind: battery' README.md` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T096": {
+      "title": "<cw-vacuum>（掃除機の状態・電池・掃除した広さと時間、始める・一時停止・止める・戻すのボタン）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs vacuum` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs vacuum catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs vacuum | grep -c '^ok   vacuum: ' | awk '$1>=14{exit 0}{exit 1}' && grep -q 'cw-vacuum' README.md && grep -q '28\\. .<cw-vacuum>' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T097": {
+      "title": "カードに kind: vacuum（battery / area / duration を sensor で指定でき、battery_level も読む。ボタンは supported_features で出し分ける）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs havacuum` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs havacuum hacard habattery | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs havacuum | grep -c '^ok   havacuum: ' | awk '$1>=9{exit 0}{exit 1}' && grep -q 'kind: vacuum' README.md` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T098": {
+      "title": "<cw-timer>（終わる時刻か残り秒を受け、残り時間を帯と数字で出す。止まっている・終わった・動いていないを区別する）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs timer` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs timer catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs timer | grep -c '^ok   timer: ' | awk '$1>=14{exit 0}{exit 1}' && grep -q 'cw-timer' README.md && grep -q '29\\. .<cw-timer>' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T099": {
+      "title": "カードに kind: timer（timer の duration・remaining・finishes_at と、終わる時刻の timestamp の sensor）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs hatimer` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs hatimer hacard | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs hatimer | grep -c '^ok   hatimer: ' | awk '$1>=8{exit 0}{exit 1}' && grep -q 'kind: timer' README.md` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T100": {
+      "title": "<cw-cover>（開き具合の絵と %、開ける・止める・閉める、位置の帯）と、カードの kind: cover（current_position、supported_features で出し分け）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs cover hacover` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs cover hacover catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs cover hacover | grep -c '^ok   \\(cover\\|hacover\\): ' | awk '$1>=20{exit 0}{exit 1}' && grep -q 'cw-cover' README.md && grep -q 'kind: cover' README.md && grep -q '30\\. .<cw-cover>' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T101": {
+      "title": "<cw-person>（写真か頭文字、居場所、いつから。在宅を先に）と、カードの kind: person（entities を書かなければ person を全部）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs person haperson` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs person haperson catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs person haperson | grep -c '^ok   \\(person\\|haperson\\): ' | awk '$1>=18{exit 0}{exit 1}' && grep -q 'cw-person' README.md && grep -q 'kind: person' README.md && grep -q '31\\. .<cw-person>' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T102": {
+      "title": "T098・T099 の監査の不具合（終わった瞬間の idle、1 day の長さ、数字だけの sensor）と穴（切り上げ、受け直し、再開、止めた間の終了と点滅、行の duration、無い timer）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs timer hatimer` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs timer hatimer | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs timer | grep -c '^ok   timer: ' | awk '$1>=22{exit 0}{exit 1}' && node tools/test_components.mjs hatimer | grep -c '^ok   hatimer: ' | awk '$1>=13{exit 0}{exit 1}' && node tools/test_components.mjs hatimer | grep -q '^ok   hatimer: active then idle at its end is done once' && node tools/test_components.mjs hatimer | grep -q '^ok   hatimer: a day and more'` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T103": {
+      "title": "T094・T095 の監査の穴（ちょうど 20%、少なくて充電中、null）と不具合（二値の機器の unavailable と不在、% でない sensor、空の値、数でない max）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs battery habattery` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs battery habattery | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs battery habattery | grep -c '^ok   \\(battery\\|habattery\\): holes: ' | awk '$1>=7{exit 0}{exit 1}'` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T104": {
+      "title": "T101 の監査の穴（日の境目、再開の見直し、止めた間の輪、カードの大きさ、entities の検証、unavailable）と頭文字を見た目の 1 文字で取る",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs person haperson` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs person haperson | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs person | grep -q '^ok   person: first letter is a whole grapheme' && node tools/test_components.mjs person | grep -q '^ok   person: paused: full rings stand still' && node tools/test_components.mjs person | grep -q '^ok   person: resume refreshes the times' && node tools/test_components.mjs haperson | grep -c '^ok   haperson: ' | awk '$1>=8{exit 0}{exit 1}'` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T105": {
+      "title": "T096・T097 の監査の不具合（押した面が戻らない、時間の単位、PAUSE の無い機種の一時停止）と穴（20% ちょうど、戻り中の回転、止めた間の押下、start、STOP だけ・PAUSE だけ、数の時間、status）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs vacuum havacuum` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs vacuum havacuum | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs vacuum havacuum | grep -c '^ok   \\(vacuum\\|havacuum\\): holes: ' | awk '$1>=9{exit 0}{exit 1}'` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T106": {
+      "title": "T100 の監査の不具合（押した面が戻らない、離しても帯をつかんだまま、傾きだけの機種、状態不明の絵）と穴。押した面を本体の状態に戻すのは掃除機・窓の覆い・スイッチ・再生で共通",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs cover hacover` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs cover hacover haswitch hamedia | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs cover hacover haswitch hamedia | grep -c '^ok   \\(cover\\|hacover\\|haswitch\\|hamedia\\): holes2: ' | awk '$1>=12{exit 0}{exit 1}'` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T107": {
+      "title": "家の見本の 6 枚目「家事」（掃除機・洗濯機と食洗機・電池・家族）と、「照明」の窓。派手版の画面のボタンは 2 列",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs homechores` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs homechores homeday homelights home homebold homegame homepick | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs homechores | grep -c '^ok   homechores: ' | awk '$1>=10{exit 0}{exit 1}' && ! grep -qE '<canvas|<svg|getContext|innerHTML' demo/home.html` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T108": {
+      "title": "3 回目の需要の調査（docs/research/cards3.md）と、components.md の実装の順番 32 以降",
+      "min_check": "`python3 tools/check_doc.py docs/research/cards3.md --sections 調べ方,種類ごとの需要,本体が出しているもの,作る順番,出典 --min-links 15 --min-table-rows 10 --require-labels 調査で確認,推測` — 最終行が `DOC OK`",
+      "gate": "`python3 tools/check_doc.py docs/research/cards3.md --sections 調べ方,種類ごとの需要,本体が出しているもの,作る順番,出典 --min-links 15 --min-table-rows 10 --require-labels 調査で確認,推測 | tail -1 | grep -q '^DOC OK' && grep -q '^32\\. ' docs/design/components.md && bash tools/check_design.sh | tail -1 | grep -qx 'DESIGN OK'` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T109": {
+      "title": "<cw-area>（部屋の温度・湿度・点いている照明・人の動き、照明をまとめて消す・点ける）と、カードの kind: area（hass.areas・entities・devices から集める）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs area haarea` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs area haarea catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs area haarea | grep -c '^ok   \\(area\\|haarea\\): ' | awk '$1>=20{exit 0}{exit 1}' && grep -q 'cw-area' README.md && grep -q 'kind: area' README.md && grep -q '32\\. .<cw-area>' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T110": {
+      "title": "<cw-sky>（昼の弧に太陽の位置、日の出・日の入り・昼の長さ、夜は月の満ち欠け）と、カードの kind: sky（sun.sun と moon の状態）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs sky hasky` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs sky hasky catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs sky hasky | grep -c '^ok   \\(sky\\|hasky\\): ' | awk '$1>=18{exit 0}{exit 1}' && grep -q 'cw-sky' README.md && grep -q 'kind: sky' README.md && grep -q '33\\. .<cw-sky>' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T111": {
+      "title": "T107 の監査の穴（6 キー、洗濯機を左の列と 1 つの値に、中身の切れ、ボタンの文字、派手版の窓の位置、食洗機、電池の充電中）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs homechores` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs homechores home homebold homegame homepick homeday homelights | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs homechores | grep -c '^ok   homechores: holes: ' | awk '$1>=8{exit 0}{exit 1}' && ! grep -qE '<canvas|<svg|getContext|innerHTML' demo/home.html` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T112": {
+      "title": "<cw-alarm>（状態、警戒の型のボタン、数字の押しボタン、暗証番号は伏せる）と、カードの kind: alarm（code_format、code_arm_required、supported_features、alarm_arm_* と alarm_disarm に code）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs alarm haalarm` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs alarm haalarm catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs alarm haalarm | grep -c '^ok   \\(alarm\\|haalarm\\): ' | awk '$1>=20{exit 0}{exit 1}' && grep -q 'cw-alarm' README.md && grep -q 'kind: alarm' README.md && grep -q '34\\. .<cw-alarm>' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T113": {
+      "title": "<cw-todo>（未完了を期限の順に、期限切れは警告の色、押して終えた・戻す）と、カードの kind: todo（todo/item/subscribe、todo.update_item、UPDATE_TODO_ITEM）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs todo hatodo` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs todo hatodo catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs todo hatodo | grep -c '^ok   \\(todo\\|hatodo\\): ' | awk '$1>=18{exit 0}{exit 1}' && grep -q 'cw-todo' README.md && grep -q 'kind: todo' README.md && grep -q '35\\. .<cw-todo>' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-11-03",
+      "passes": true,
+      "amendments": []
+    },
+    "T114": {
+      "title": "家の見本の「照明」に部屋のまとめ 3 つ、「今日」に空、「カメラ」に防犯の操作盤、「家事」に買い物の一覧（両方の並べ方）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs homemore` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs homemore homechores homeday homecams homelights home homebold homegame homepick | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs homemore | grep -c '^ok   homemore: ' | awk '$1>=10{exit 0}{exit 1}' && ! grep -qE '<canvas|<svg|getContext|innerHTML' demo/home.html` — 終了コード 0",
+      "locked": "2026-11-04",
+      "passes": true,
+      "amendments": []
+    },
+    "T115": {
+      "title": "T110 の監査の穴（太陽の高さ、満ち欠けの形と左右、言葉、毎分の見直し、再開、止めた間の光、unknown の月）と不具合（白夜・極夜、夏時間の日の出、南半球の月）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs sky hasky` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs sky hasky catalog | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs sky hasky | grep -c '^ok   \\(sky\\|hasky\\): holes: ' | awk '$1>=10{exit 0}{exit 1}' && TZ=America/New_York node tools/test_components.mjs hasky | tail -1 | grep -qx 'COMPONENTS OK'` — 終了コード 0",
+      "locked": "2026-11-04",
+      "passes": true,
+      "amendments": []
+    },
+    "T116": {
+      "title": "T109 の監査の穴（occupancy・presence、全部不明の人感、点ける側、3 秒の戻し、押した面と待つ値）と不具合（設定・診断用の照明、照明のグループの二重、使えない照明）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs area haarea` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs area haarea | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs area haarea | grep -c '^ok   \\(area\\|haarea\\): holes: ' | awk '$1>=6{exit 0}{exit 1}'` — 終了コード 0",
+      "locked": "2026-11-04",
+      "passes": true,
+      "amendments": []
+    },
+    "T117": {
+      "title": "T113 の監査の穴と不具合（期限を Home Assistant の時間帯で数える、止めた間の押下、uid も名前もない項目）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs todo hatodo` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs todo hatodo | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs todo hatodo | grep -c '^ok   \\(todo\\|hatodo\\): holes: ' | awk '$1>=10{exit 0}{exit 1}' && TZ=America/Los_Angeles node tools/test_components.mjs todo hatodo | tail -1 | grep -qx 'COMPONENTS OK'` — 終了コード 0",
+      "locked": "2026-11-04",
+      "passes": true,
+      "amendments": []
+    },
+    "T118": {
+      "title": "T112 の監査の不具合（打ちかけの暗証が状態の変化後も残って送られる、キーボードで打てない）と穴（漏れの検査、警戒に暗証、消す、発報と切り替え中、止めた間、点滅、bits、既定値、3 秒の戻し）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs alarm haalarm` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs alarm haalarm | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs alarm haalarm | grep -c '^ok   \\(alarm\\|haalarm\\): holes: ' | awk '$1>=9{exit 0}{exit 1}' && node tools/test_components.mjs alarm | grep -q '^ok   alarm: holes: a state change from Home Assistant drops a half-typed code'` — 終了コード 0",
+      "locked": "2026-11-04",
+      "passes": true,
+      "amendments": []
+    },
+    "T119": {
+      "title": "CHARTER の方向を、所有者の判断 B（HTML の部品集が本体、Home Assistant は題材の 1 つ）に書き換える",
+      "min_check": "`grep -q '^方向: HTML の部品集が本体' CHARTER.md && grep -q '2026-11-04 所有者の判断' CHARTER.md && grep -q 'Home Assistant は題材の 1 つ' CHARTER.md` — 終了コード 0",
+      "gate": "`grep -q '^方向: HTML の部品集が本体' CHARTER.md && grep -q '2026-11-04 所有者の判断' CHARTER.md && grep -q 'Home Assistant は題材の 1 つ' CHARTER.md` — 終了コード 0",
+      "locked": "2026-11-04",
+      "passes": true,
+      "amendments": []
+    },
+    "T120": {
+      "title": "<cw-source> の届け先に、部品一覧の「値」の列にある全部の値の部品のプロパティを足す",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs sourceall` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs sourceall source | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs sourceall | grep -c '^ok   sourceall: ' | awk '$1>=6{exit 0}{exit 1}'` — 終了コード 0",
+      "locked": "2026-11-04",
+      "passes": true,
+      "amendments": []
+    },
+    "T121": {
+      "title": "この機械の実際のデータをつないだ自分用の画面（demo/machine.html と tools/machine-feed.mjs）。頁は部品と <cw-source> だけ",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs machine` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs machine sourceall source | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs machine | grep -c '^ok   machine: ' | awk '$1>=9{exit 0}{exit 1}' && ! grep -qE '<script>' demo/machine.html` — 終了コード 0",
+      "locked": "2026-11-04",
+      "passes": true,
+      "amendments": []
+    },
+    "T122": {
+      "title": "舞台なしの普通の頁（demo/plain.html）で全部の部品が枠に収まる。防犯の押しボタンは幅があれば 6 列 2 段",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs plain` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs plain alarm | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs plain | grep -c '^ok   plain: ' | awk '$1>=4{exit 0}{exit 1}'` — 終了コード 0",
+      "locked": "2026-11-07",
+      "passes": true,
+      "amendments": []
+    },
+    "T123": {
+      "title": "T120・T121 の監査: サーバーの安全上の穴（配る範囲を demo・dist・themes に限る、symlink は行き先で確かめる、壊れた % は 400、Host は 127.0.0.1 と localhost だけ）、接続ごとの commit の記録、検査が中身を見る",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs machine sourceall` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs machine sourceall | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs machine | grep -c '^ok   machine: holes: ' | awk '$1>=8{exit 0}{exit 1}'` — 終了コード 0",
+      "locked": "2026-11-07",
+      "passes": true,
+      "amendments": []
+    },
+    "T124": {
+      "title": "check_doc --check-urls: 待ち直しても 429 のままのリンクは「回数で断られた、判定しない」と出して落とさない（404 などは落とす）",
+      "min_check": "`bash tools/test_check_doc_retry.sh` — 最終行が `SELFTEST OK`",
+      "gate": "`bash tools/test_check_doc_retry.sh | tail -1 | grep -qx 'SELFTEST OK' && bash tools/test_check_doc_retry.sh | grep -q '^ok   429 every time is not judged and does not fail' && bash tools/test_check_doc_retry.sh | grep -q '^ok   404 still fails'` — 終了コード 0",
+      "locked": "2026-11-07",
+      "passes": true,
+      "amendments": []
+    },
+    "T125": {
+      "title": "外のサイトへの自動のアクセスをやめる（check_doc は CHECK_DOC_ONLINE=1 のときだけ外を開く。自己検査は手元のサーバーだけ）",
+      "min_check": "`bash tools/check_doc_selftest.sh | tail -1 | grep -qx 'SELFTEST OK' && bash tools/check_doc_selftest.sh | grep -q '^ok   outside URLs are not opened by default' && bash tools/test_check_doc_retry.sh | tail -1 | grep -qx 'SELFTEST OK'` — 終了コード 0",
+      "gate": "`bash tools/check_doc_selftest.sh | tail -1 | grep -qx 'SELFTEST OK' && bash tools/check_doc_selftest.sh | grep -q '^ok   outside URLs are not opened by default' && bash tools/test_check_doc_retry.sh | tail -1 | grep -qx 'SELFTEST OK'` — 終了コード 0",
+      "locked": "2026-11-07",
+      "passes": true,
+      "amendments": []
+    }
+  }
+}

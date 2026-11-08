@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-switch</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; padding: 48px; box-sizing: border-box; align-content: start; }
+  .list { display: flex; flex-direction: column; gap: 12px; }
+  #loose { position: fixed; left: 16px; bottom: 16px; width: 260px; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="居間">
+      <div class="list">
+        <cw-switch id="lamp" label="天井の灯り" on level="0.6"></cw-switch>
+        <cw-switch id="stand" label="スタンド" level="0.3"></cw-switch>
+      </div>
+    </cw-panel>
+    <cw-panel label="台所">
+      <div class="list">
+        <cw-switch id="fan" label="換気扇"></cw-switch>
+        <cw-switch id="kettle" label="電気ケトル" on text="保温"></cw-switch>
+      </div>
+    </cw-panel>
+    <cw-panel label="寝室">
+      <div class="list">
+        <cw-switch id="bed" label="枕元" on level="0.15"></cw-switch>
+      </div>
+    </cw-panel>
+  </div>
+</cw-stage>
+<cw-switch id="loose" label="ひとりで置いた灯り" on level="0.8" motion="full"></cw-switch>
+<script>
+  const m = new URLSearchParams(location.search).get('motion');
+  if (m) document.querySelector('#board').setAttribute('motion', m);
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Tasks.lock.json: a locked gate is loosened only by an amendment. Cheap, so it
+# runs on every commit. Wired by: git config core.hooksPath .githooks
+set -euo pipefail
+python3 tools/check_tasks_lock.py --staged

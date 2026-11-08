@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-sky</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--cw-ground-solid); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr) 200px; gap: 24px; padding: 48px; box-sizing: border-box; align-content: start; }
+  cw-panel { height: 230px; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="昼"><cw-sky id="day"></cw-sky></cw-panel>
+    <cw-panel label="夜"><cw-sky id="night"></cw-sky></cw-panel>
+    <cw-panel label="取得できない"><cw-sky id="none"></cw-sky></cw-panel>
+    <cw-panel label="狭い枠"><cw-sky id="narrow"></cw-sky></cw-panel>
+  </div>
+</cw-stage>
+<script>
+  const m = new URLSearchParams(location.search).get('motion');
+  if (m) document.querySelector('#board').setAttribute('motion', m);
+  const t = Date.now(), H = 3600e3;
+  // a day of 10 h 40 min, a quarter gone
+  document.getElementById('day').now = { rise: t - 2 * H - 40 * 60e3, set: t + 8 * H, phase: 'waxing_crescent' };
+  document.getElementById('night').now = { rise: new Date(t + 9 * H).toISOString(), set: new Date(t + 19 * H).toISOString(), phase: 'waxing_gibbous' };
+  document.getElementById('narrow').now = { rise: t - 2 * H - 40 * 60e3, set: t + 8 * H };
+</script>
+</body>
+</html>

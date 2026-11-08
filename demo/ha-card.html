@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-ha-card</title>
+<script src="../dist/cw-ha-card.iife.js"></script>
+<style>
+  /* stands in for a Home Assistant dashboard column */
+  body { margin: 0; min-height: 100vh; background: #111318; font-family: system-ui, sans-serif; color: #ddd; }
+  .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 24px; align-items: start; }
+  .col { display: flex; flex-direction: column; gap: 16px; }
+  .col.photo { padding: 16px; border-radius: 24px; background: linear-gradient(160deg, #0b1d2b, #1d2d3a 45%, #33281f); }
+  h2 { font: 500 13px system-ui; color: #888; margin: 0 0 -6px 4px; }
+</style>
+<body>
+<div class="cols">
+  <div class="col"><h2>look: tile</h2><cw-ha-card id="tile"></cw-ha-card><cw-ha-card id="lights"></cw-ha-card><cw-ha-card id="batteries"></cw-ha-card><cw-ha-card id="cleaner"></cw-ha-card><cw-ha-card id="family"></cw-ha-card><cw-ha-card id="tile2"></cw-ha-card></div>
+  <div class="col"><h2>look: tile, motion: full</h2><cw-ha-card id="full"></cw-ha-card><cw-ha-card id="more"></cw-ha-card><cw-ha-card id="cabin"></cw-ha-card></div>
+  <div class="col photo"><h2>look: glass</h2><cw-ha-card id="glass"></cw-ha-card><cw-ha-card id="glass2"></cw-ha-card></div>
+</div>
+<script>
+  const rows = [
+    { entity: 'sensor.living_temperature', kind: 'stat', label: '室温', digits: 1 },
+    { entity: 'sensor.living_humidity', kind: 'stat', label: '湿度' },
+    { entity: 'lock.front_door', kind: 'status', label: '玄関の鍵' },
+    { entity: 'binary_sensor.garden_camera', kind: 'status', label: '庭のカメラ' },
+  ];
+  const power = [{ entity: 'sensor.home_power', kind: 'bars', label: '部屋ごとの電力', unit: 'W', attributes: ['居間', '台所', '寝室', '書斎'] }];
+  const cards = {
+    tile: { title: '居間', entities: rows }, tile2: { title: '電力', entities: power },
+    more: { title: '今日', entities: [{ entity: 'weather.home', kind: 'weather', days: 4 }, { entity: 'calendar.family', kind: 'agenda', days: 3, max: 4 }, { entity: 'climate.living', kind: 'dial', label: '居間の空調' }] },
+    // a home abroad: °F, a twice-daily forecast, wind in Beaufort, a speaker that only plays, pauses and skips forward
+    cabin: { title: '別荘', entities: [{ entity: 'weather.cabin', kind: 'weather', days: 4 }, { entity: 'media_player.cabin', kind: 'media' }] },
+    batteries: { title: '電池', entities: [{ kind: 'battery', max: 5 }] },
+    family: { title: '家族', entities: [{ kind: 'person' }, { kind: 'area', area: 'living' }] },
+    cleaner: { title: '家事', entities: [{ entity: 'vacuum.living', kind: 'vacuum', battery: 'sensor.robot_battery', area: 'sensor.robot_area', duration: 'sensor.robot_time' }, { entity: 'sensor.washer_end', kind: 'timer', duration: 90 }] },
+    lights: { title: '照明', entities: [{ entity: 'light.ceiling', kind: 'switch', label: '天井の灯り' }, { entity: 'light.stand', kind: 'switch' }, { entity: 'switch.fan', kind: 'switch', label: '換気扇' }, { entity: 'cover.living', kind: 'cover' }] },
+    full: { title: '居間', motion: 'full', entities: [...rows, ...power] },
+    glass: { title: '居間', look: 'glass', entities: rows }, glass2: { title: '電力', look: 'glass', entities: power },
+  };
+  for (const [id, cfg] of Object.entries(cards)) document.getElementById(id).setConfig(cfg);
+
+  const washerEnd = new Date(Date.now() + 47 * 60e3).toISOString();
+  const since = new Date(Date.now() - 2 * 3600e3 - 14 * 60e3).toISOString();
+  let t = 0;
+  // lights the cards can change: the fake Home Assistant applies their service calls and sends the new states back
+  const lights = {
+    'light.ceiling': { state: 'on', attributes: { brightness: 204, rgb_color: [255, 179, 92], friendly_name: '天井の灯り' } },
+    'light.stand': { state: 'off', attributes: { brightness: null, friendly_name: 'スタンド' } },
+    'switch.fan': { state: 'off', attributes: { friendly_name: '換気扇' } },
+    'climate.living': { state: 'heat', attributes: { current_temperature: 21.4, temperature: 22.5, min_temp: 7, max_temp: 35, target_temp_step: 0.5 } },
+  };
+  const memory = { 'light.stand': 90 };
+  // the calendar API and the forecast subscription of a Home Assistant that is not there
+  const at = (n, h, m = 0) => { const d = new Date(); d.setDate(d.getDate() + n); d.setHours(h, m, 0, 0); return d.toISOString(); };
+  const callApi = async () => [
+    { summary: '夕食の買い出し', start: { dateTime: at(0, 23, 30) }, end: { dateTime: at(0, 23, 59) }, location: '駅前' },
+    { summary: '燃えるごみ', start: { date: at(1, 12).slice(0, 10) }, end: { date: at(2, 12).slice(0, 10) } },
+    { summary: 'ハル 遠足', start: { dateTime: at(1, 8) }, end: { dateTime: at(1, 15) }, location: '動物園' },
+  ];
+  const connection = { subscribeMessage: async (cb, msg) => {
+    if (msg.forecast_type === 'twice_daily') {
+      cb({ type: 'twice_daily', forecast: [0, 1, 2, 3].flatMap((i) => [
+        { datetime: at(i, 7), is_daytime: true, condition: ['sunny', 'windy', 'rainy', 'cloudy'][i], temperature: 64 - i * 3, precipitation_probability: [0, 10, 70, 20][i] },
+        { datetime: at(i, 19), is_daytime: false, condition: 'clear-night', temperature: 48 - i * 2, precipitation_probability: [0, 10, 40, 10][i] },
+      ]) });
+      return () => {};
+    }
+    cb({ type: 'daily', forecast: ['partlycloudy', 'rainy', 'cloudy', 'sunny', 'snowy'].map((c, i) => ({ datetime: at(i, 9), condition: c, temperature: 18 - i, templow: 9 - i, precipitation_probability: [10, 80, 30, 0, 60][i] })) });
+    return () => {};
+  } };
+  function callService(domain, service, { entity_id: id, brightness_pct: pct }) {
+    if (Array.isArray(id)) { for (const one of id) callService(domain, service, { ...arguments[2], entity_id: one }); return; }
+    if (domain === 'climate') { lights[id] = { ...lights[id], attributes: { ...lights[id].attributes, temperature: arguments[2].temperature } }; setTimeout(tick, 30); return; }
+    const s = lights[id], on = service === 'turn_on' || (service === 'toggle' && s.state !== 'on');
+    if (s.state === 'on' && Number.isFinite(s.attributes.brightness)) memory[id] = s.attributes.brightness;
+    const b = !Object.hasOwn(s.attributes, 'brightness') ? undefined : !on ? null : pct ? Math.round(pct * 2.55) : memory[id] ?? 255;
+    lights[id] = { state: on ? 'on' : 'off', attributes: { ...s.attributes, ...(b !== undefined && { brightness: b }) } };
+    setTimeout(tick, 30);
+  }
+  function hass() {
+    t++;
+    return { callService, callApi, connection,
+      areas: { living: { area_id: 'living', name: '居間', temperature_entity_id: 'sensor.living_temperature', humidity_entity_id: 'sensor.living_humidity' } },
+      entities: { 'light.ceiling': { entity_id: 'light.ceiling', area_id: 'living' }, 'light.stand': { entity_id: 'light.stand', area_id: 'living' } },
+      devices: {},
+      states: { ...lights,
+      'weather.cabin': { state: 'windy', attributes: { temperature: 61, temperature_unit: '°F', humidity: 40, wind_speed: 5, wind_speed_unit: 'Beaufort', supported_features: 6 } },
+      'media_player.cabin': { state: 'buffering', attributes: { media_title: '波の音', media_artist: '別荘のスピーカー', entity_picture: 'http://192.168.1.40/art.jpg', entity_picture_local: 'img/cover.svg', supported_features: 1 | 32 | 16384 } },
+      'sensor.door_battery': { state: '64', attributes: { device_class: 'battery', unit_of_measurement: '%', friendly_name: '玄関の人感センサー' } },
+      'sensor.bedroom_battery': { state: '12', attributes: { device_class: 'battery', unit_of_measurement: '%', friendly_name: '寝室の温度計' } },
+      'sensor.window_battery': { state: '38', attributes: { device_class: 'battery', unit_of_measurement: '%', friendly_name: '窓の開閉センサー' } },
+      'binary_sensor.leak_battery': { state: 'on', attributes: { device_class: 'battery', friendly_name: '浴室の水漏れ' } },
+      'vacuum.living': { state: 'cleaning', attributes: { friendly_name: 'ルンバ', supported_features: 4 | 8 | 16 | 8192 } },
+      'sensor.robot_battery': { state: '72', attributes: { device_class: 'battery', unit_of_measurement: '%', friendly_name: 'ルンバ' } },
+      'sensor.robot_area': { state: '23.6', attributes: { unit_of_measurement: 'm²' } },
+      'sensor.robot_time': { state: '18', attributes: { unit_of_measurement: 'min' } },
+      'sensor.washer_end': { state: washerEnd, attributes: { device_class: 'timestamp', friendly_name: '洗濯機' } },
+      'cover.living': { state: 'open', attributes: { current_position: 60, friendly_name: '南の窓', supported_features: 15 } },
+      'person.aoi': { state: 'home', last_changed: new Date(Date.now() - 25 * 60e3).toISOString(), attributes: { friendly_name: 'アオイ', entity_picture: 'img/cover.svg' } },
+      'person.hal': { state: 'not_home', last_changed: since, attributes: { friendly_name: 'ハル' } },
+      'weather.home': { state: 'partlycloudy', attributes: { temperature: 14.6, humidity: 58, wind_speed: 11.7, wind_speed_unit: 'km/h' } },
+      'sensor.living_temperature': { state: (22.4 + Math.sin(t / 3) * 0.6).toFixed(1), attributes: { unit_of_measurement: '°C' } },
+      'sensor.living_humidity': { state: String(48 + (t % 3)), attributes: { unit_of_measurement: '%' } },
+      'lock.front_door': { state: 'locked', last_changed: since, attributes: {} },
+      'binary_sensor.garden_camera': { state: 'unavailable', attributes: {} },
+      'sensor.home_power': { state: '482', attributes: { 居間: 182 + (t % 5) * 6, 台所: 140 - (t % 4) * 9, 寝室: 36, 書斎: 95 + (t % 3) * 4 } },
+    } };
+  }
+  function tick() { const h = hass(); for (const id of Object.keys(cards)) document.getElementById(id).hass = h; }
+  tick();
+  if (!new URLSearchParams(location.search).has('still')) setInterval(tick, 2000);
+</script>
+</body>
+</html>

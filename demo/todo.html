@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-todo</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--cw-ground-solid); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr) 190px; gap: 24px; padding: 48px; box-sizing: border-box; align-content: start; }
+  cw-panel { height: 300px; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="買い物"><cw-todo id="shop"></cw-todo></cw-panel>
+    <cw-panel label="家の用事" sublabel="終えたものも"><cw-todo id="chores" done max="5"></cw-todo></cw-panel>
+    <cw-panel label="見るだけ"><cw-todo id="ro" readonly></cw-todo></cw-panel>
+    <cw-panel label="狭い枠"><cw-todo id="narrow"></cw-todo></cw-panel>
+    <cw-panel label="何もない"><cw-todo id="none"></cw-todo></cw-panel>
+  </div>
+</cw-stage>
+<script>
+  const m = new URLSearchParams(location.search).get('motion');
+  if (m) document.querySelector('#board').setAttribute('motion', m);
+  const day = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d.toLocaleDateString('sv'); };
+  const shop = [
+    { uid: 'a', summary: '牛乳', status: 'needs_action' }, { uid: 'b', summary: '電池（単三）', status: 'needs_action', due: day(1) },
+    { uid: 'c', summary: 'パン', status: 'completed' }, { uid: 'd', summary: '洗剤', status: 'needs_action', due: day(-2) },
+    { uid: 'e', summary: '卵', status: 'needs_action', due: day(0) },
+  ];
+  document.getElementById('shop').items = shop;
+  document.getElementById('chores').items = [
+    { uid: '1', summary: 'フィルターの掃除', status: 'needs_action', due: day(5) }, { uid: '2', summary: '燃えるごみ', status: 'completed' },
+    { uid: '3', summary: '車検の予約', status: 'needs_action', due: day(12) }, { uid: '4', summary: '植木の水やり', status: 'completed' },
+  ];
+  document.getElementById('ro').items = shop;
+  document.getElementById('narrow').items = shop;
+</script>
+</body>
+</html>

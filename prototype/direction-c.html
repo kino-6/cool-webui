@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DEMO 操作盤</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Big+Shoulders+Stencil+Display:wght@700;800;900&family=Noto+Sans+JP:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#1a1b1d; --plate:#232427; --deep:#0c0d0e;
+  --sig:#ffd400; --white:#e8ecef; --dim:#8b9197; --faint:#565b61;
+  --lamp:#7cff6b; --warn:#ff7a1a;
+  --mono:'Share Tech Mono',ui-monospace,monospace;
+  --sten:'Big Shoulders Stencil Display','Barlow Condensed',sans-serif;
+  --cond:'Barlow Condensed',sans-serif;
+  --jp:'Noto Sans JP',sans-serif;
+  --hazard:repeating-linear-gradient(-45deg,var(--sig) 0 10px,#111 10px 20px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--ground);color:var(--white);font-family:var(--cond)}
+body.clear,html.clear{background:transparent}
+#bg,#bgfb{position:fixed;inset:0;width:100%;height:100%;display:block}
+#bgfb{display:none;background:
+  radial-gradient(circle at 50% 50%,#070708 0 3.6px,transparent 4.4px) 0 0/18px 18px,
+  radial-gradient(circle at 50% 50%,#070708 0 3.6px,transparent 4.4px) 9px 9px/18px 18px,
+  linear-gradient(115deg,#18191b,#232427 50%,#18191b)}
+html.clear #bg,html.clear #bgfb{display:none!important}
+
+#stage{position:absolute;left:50%;top:50%;width:1600px;height:900px;transform-origin:0 0}
+
+/* ---------- 盤（パネル） ---------- */
+.panel{position:absolute;border:5px solid;border-color:#3d3f44 #141517 #101113 #35373c;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9 .06' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"),
+    linear-gradient(180deg,#2a2b2f,#202124);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.6),inset 0 2px 0 1px rgba(255,255,255,.04),0 0 0 1px #08090a,0 12px 26px rgba(0,0,0,.55);
+  padding:14px 26px 16px}
+.sc{position:absolute;width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#8d9096,#45484d 55%,#202124);
+  box-shadow:0 1px 0 rgba(255,255,255,.08),inset 0 -1px 1px rgba(0,0,0,.6)}
+.sc::after{content:'';position:absolute;left:1px;right:1px;top:4px;height:2px;background:#16171a;transform:rotate(var(--r))}
+.sc:nth-child(1){left:5px;top:5px}.sc:nth-child(2){right:5px;top:5px}.sc:nth-child(3){left:5px;bottom:5px}.sc:nth-child(4){right:5px;bottom:5px}
+.pl{display:flex;align-items:baseline;gap:10px;font:800 19px/1 var(--sten);letter-spacing:.14em;color:rgba(232,236,239,.62);text-transform:uppercase;margin-bottom:12px}
+.pl small{font:700 12px var(--jp);letter-spacing:.08em;color:var(--dim)}
+.pl .r{margin-left:auto;font:600 13px var(--cond);letter-spacing:.12em;color:var(--dim)}
+.win{background:var(--deep);border:1px solid #050506;box-shadow:inset 0 2px 6px rgba(0,0,0,.8),0 1px 0 rgba(255,255,255,.06)}
+
+/* 7 セグ風の数字（消えている桁を薄く敷く） */
+.seg{position:relative;z-index:0;font-family:var(--mono);color:var(--sig);text-shadow:0 0 14px rgba(255,212,0,.35)}
+.seg::before{content:attr(data-g);position:absolute;left:0;top:0;z-index:-1;color:rgba(255,212,0,.07);text-shadow:none}
+
+/* ---------- 左の操作列 ---------- */
+#nav{left:24px;top:24px;width:244px;height:812px;padding:20px 18px;display:flex;flex-direction:column}
+.brand{font:900 50px/.9 var(--sten);color:var(--sig);letter-spacing:.06em}
+.brandsub{display:flex;justify-content:space-between;margin-top:8px;font:600 13px var(--cond);letter-spacing:.18em;color:var(--dim)}
+.brandsub b{font:700 12px var(--jp);letter-spacing:.1em}
+.hz{height:10px;background:var(--hazard);box-shadow:inset 0 0 0 1px rgba(0,0,0,.5)}
+#nav .hz{margin:16px 0 18px}
+#menu{list-style:none;display:flex;flex-direction:column;gap:12px}
+#menu li{position:relative;display:grid;grid-template-columns:54px minmax(0,1fr) 10px;align-items:center;gap:10px;height:76px;padding:0 10px 0 8px;cursor:pointer;
+  background:linear-gradient(180deg,#2c2e32,#1d1e21);border:1px solid #0b0b0c;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 3px 0 #0b0b0c}
+#menu li .k{height:54px;display:grid;place-items:center;font:22px var(--mono);color:var(--dim);background:#141517;box-shadow:inset 0 2px 4px rgba(0,0,0,.7)}
+#menu li .t{font:700 24px/1 var(--cond);letter-spacing:.04em;color:var(--white)}
+#menu li .t small{display:block;margin-top:3px;font:700 12px var(--jp);letter-spacing:.1em;color:var(--dim)}
+#menu li .led{width:10px;height:10px;border-radius:50%;background:#3a2f00;box-shadow:inset 0 1px 2px rgba(0,0,0,.8)}
+#menu li.on{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 1px 0 #0b0b0c}
+#menu li.on .k{background:var(--sig);color:#111;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
+#menu li.on .led{background:var(--sig);box-shadow:0 0 10px var(--sig),0 0 2px #fff inset}
+#menu li:hover .t{color:var(--sig)}
+.mini{margin-top:auto;padding:12px 14px;font:600 15px/1.75 var(--cond);letter-spacing:.08em}
+.mini div{display:flex;justify-content:space-between;color:var(--dim)}
+.mini b{font:15px var(--mono);color:var(--white)}
+.mini b.jp{font:700 13px var(--jp)}
+.mswitch{margin-top:14px}
+.mswitch .lb{display:flex;justify-content:space-between;font:800 15px var(--sten);letter-spacing:.16em;color:rgba(232,236,239,.6);margin-bottom:6px}
+.mswitch .lb small{font:700 11px var(--jp);color:var(--dim);letter-spacing:.06em}
+.mswitch .row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.mswitch button{height:34px;font:700 15px var(--cond);letter-spacing:.12em;color:var(--dim);cursor:pointer;
+  background:linear-gradient(180deg,#2c2e32,#1d1e21);border:1px solid #0b0b0c;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 3px 0 #0b0b0c}
+.mswitch button.on{background:var(--sig);color:#111;transform:translateY(2px);box-shadow:0 1px 0 #0b0b0c}
+.keys{margin-top:10px;font:600 12px var(--cond);letter-spacing:.1em;color:var(--faint)}
+
+/* ---------- 頁 ---------- */
+#main{position:absolute;left:286px;top:24px;width:1290px;height:812px}
+.page{position:absolute;inset:0;display:none}
+.page.active{display:block}
+.head{position:absolute;left:0;top:0;right:0;height:64px;display:flex;align-items:center;gap:18px;text-shadow:0 2px 0 rgba(0,0,0,.55),0 0 12px rgba(0,0,0,.5)}
+.head .no{font:900 62px/1 var(--sten);color:var(--sig)}
+.head .en{font:900 54px/1 var(--sten);letter-spacing:.06em;color:var(--white)}
+.head .ja{font:900 22px var(--jp);color:var(--dim);letter-spacing:.12em;align-self:flex-end;margin-bottom:6px}
+.head .hz{width:96px;height:14px;align-self:center;margin-left:6px}
+.clock{margin-left:auto;display:flex;align-items:center;gap:16px}
+.clock .d{text-align:right;font:700 16px/1.15 var(--cond);letter-spacing:.14em;color:var(--dim)}
+.clock .d b{display:block;color:var(--white);font-size:20px}
+.clock .win{padding:4px 14px 2px}
+.clock .seg{font-size:44px;line-height:1}
+
+/* 主状態 */
+#hero{left:0;top:82px;width:760px;height:232px;padding:14px 26px 16px 46px}
+#hero::before{content:'';position:absolute;left:0;top:0;bottom:0;width:20px;background:var(--hazard);box-shadow:inset -2px 0 0 rgba(0,0,0,.5)}
+.st{position:absolute;left:46px;top:46px;display:flex;align-items:center;gap:22px}
+.lamp{position:relative;width:104px;height:104px;border-radius:50%;padding:9px;
+  background:linear-gradient(145deg,#4a4c52,#16171a);box-shadow:0 3px 8px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.15)}
+.lamp i{display:block;width:100%;height:100%;border-radius:50%;
+  background:radial-gradient(circle at 38% 32%,#e9ffe4 0,#a8ff9c 18%,var(--lamp) 45%,#2a8a20 100%);
+  box-shadow:0 0 30px rgba(124,255,107,.55),inset 0 -6px 12px rgba(0,60,0,.5)}
+.lamp b{position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,rgba(124,255,107,.32),transparent 65%);opacity:.6}
+.m-full .lamp b{animation:glow 2.4s ease-in-out infinite}
+@keyframes glow{50%{opacity:1}}
+.stt .lb{font:600 14px var(--cond);letter-spacing:.24em;color:var(--dim)}
+.stt .v{font:900 66px/.95 var(--sten);letter-spacing:.04em;color:var(--white)}
+.stt .jp{font:900 18px var(--jp);color:var(--lamp);letter-spacing:.18em}
+.up{position:absolute;right:26px;top:40px;width:330px}
+.up .lb{display:flex;justify-content:space-between;font:600 14px var(--cond);letter-spacing:.24em;color:var(--dim);margin-bottom:6px}
+.up .win{padding:8px 16px 4px}
+.up .seg{font-size:70px;line-height:1}
+.hrow{position:absolute;left:46px;right:26px;bottom:16px;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #111214;box-shadow:0 -1px 0 rgba(255,255,255,.05) inset}
+.hrow div{padding-top:10px;font:600 13px var(--cond);letter-spacing:.18em;color:var(--dim)}
+.hrow b{display:block;font:20px var(--mono);color:var(--white);letter-spacing:.02em}
+.hrow b.jp{font:700 17px var(--jp)}
+
+/* 数値 */
+#stats{left:778px;top:82px;width:512px;height:232px}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cell{padding:7px 14px 6px}
+.cell .k{display:flex;justify-content:space-between;font:600 13px var(--cond);letter-spacing:.18em;color:var(--dim)}
+.cell .v{display:flex;align-items:baseline;gap:6px}
+.cell .seg{font-size:46px;line-height:1.05}
+.cell u{text-decoration:none;font:700 18px var(--cond);color:var(--dim);letter-spacing:.1em}
+
+/* グラフ */
+#chartP{left:0;top:332px;width:760px;height:250px}
+.lg{display:inline-flex;align-items:center;gap:6px;margin-left:14px}
+.lg i{display:inline-block;width:22px;height:0;border-top:2px solid var(--sig)}
+.lg i.d{border-top:2px dashed var(--white)}
+#chart{display:block}
+
+/* レーン */
+#lanesP{left:0;top:600px;width:760px;height:212px}
+.lane{display:grid;grid-template-columns:54px 1fr 64px;align-items:center;gap:14px;height:29px}
+.lane b{font:700 16px var(--jp);color:var(--white)}
+.meter{position:relative;height:16px;padding:2px}
+.meter span{position:absolute;inset:2px;background:repeating-linear-gradient(90deg,rgba(255,212,0,.09) 0 9px,transparent 9px 12px)}
+.meter span.f{background:repeating-linear-gradient(90deg,var(--sig) 0 9px,transparent 9px 12px);clip-path:inset(0 calc(100% - var(--w,0%)) 0 0)}
+.meter span.f.hot{background:repeating-linear-gradient(90deg,var(--warn) 0 9px,transparent 9px 12px)}
+.lane i.hot{color:var(--warn)}
+.lane i{font:20px var(--mono);font-style:normal;text-align:right;color:var(--white)}
+
+/* ログ */
+#logP{left:778px;top:332px;width:512px;height:290px}
+#log{height:222px;padding:6px 10px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;font:12.5px/18.5px var(--mono)}
+#log div{display:grid;grid-template-columns:86px 42px 96px 1fr;gap:8px;white-space:nowrap;color:#b9c0c6}
+#log div span:last-child{overflow:hidden;text-overflow:ellipsis;color:var(--dim)}
+#log .L{color:#7d858c}
+#log .W{color:var(--warn)}
+#log .E{color:#111;background:var(--warn);text-align:center}
+#log .ty{color:var(--white)}
+.m-full #log div.n{animation:fl .5s ease-out}
+@keyframes fl{from{opacity:.2}}
+.blink{color:var(--lamp)}
+.m-full .blink{animation:bl 1s steps(1) infinite}
+@keyframes bl{50%{opacity:.25}}
+
+/* 会話 */
+#chatP{left:778px;top:640px;width:512px;height:172px}
+#talk{display:flex;flex-direction:column;gap:6px}
+#talk div{display:grid;grid-template-columns:78px 1fr;align-items:center;gap:12px;height:30px}
+#talk b{font:700 13px var(--jp);text-align:center;padding:3px 0;color:var(--white);background:#141517;box-shadow:inset 0 1px 3px rgba(0,0,0,.7)}
+#talk .me b{background:var(--sig);color:#111;box-shadow:none}
+#talk span{font:500 15px var(--jp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#d4d9dd}
+.m-full #talk div.n{animation:fl .6s ease-out}
+
+/* 他の頁 */
+.big{position:absolute;left:0;top:120px;font:900 220px/.85 var(--sten);color:var(--white);letter-spacing:.02em}
+.big em{font-style:normal;color:var(--sig)}
+.bigja{position:absolute;left:8px;top:330px;font:900 64px var(--jp);color:var(--dim);letter-spacing:.2em}
+.notice{left:0;top:470px;width:760px;height:180px;padding:24px 26px 24px 64px}
+.notice::before{content:'';position:absolute;left:0;top:0;bottom:0;width:36px;background:var(--hazard)}
+.notice h3{font:800 30px var(--sten);letter-spacing:.14em;color:var(--warn)}
+.notice p{margin-top:10px;font:700 17px/1.7 var(--jp);color:#c9ced3}
+
+/* ---------- 下の流れる帯 ---------- */
+#ticker{position:absolute;left:24px;top:852px;width:1552px;height:30px;display:flex;overflow:hidden;
+  background:#0d0e0f;border:1px solid #050506;box-shadow:inset 0 2px 5px rgba(0,0,0,.8),0 1px 0 rgba(255,255,255,.05)}
+#ticker .lb{flex:none;display:grid;place-items:center;padding:0 16px;background:var(--sig);color:#111;font:800 15px var(--sten);letter-spacing:.2em}
+#ticker .wrap{flex:1;overflow:hidden;position:relative}
+#tick{position:absolute;left:0;top:0;white-space:nowrap;font:14px/30px var(--mono);color:#aeb5bb;will-change:transform}
+#tick b{color:var(--sig);font-weight:400;margin:0 10px}
+.m-full #tick{animation:run 80s linear infinite}
+@keyframes run{to{transform:translateX(-50%)}}
+
+/* ---------- 画面切り替え（シャッター） ---------- */
+#shutter{position:absolute;left:286px;top:24px;width:1290px;height:812px;pointer-events:none;display:flex;flex-direction:column;z-index:20}
+#shutter i{flex:1;transform:scaleY(0);transform-origin:top;
+  background:repeating-linear-gradient(180deg,transparent 0 9px,rgba(0,0,0,.35) 9px 10px,rgba(255,255,255,.06) 10px 11px,transparent 11px 20px),
+    linear-gradient(180deg,#53565c 0,#3a3c41 18%,#2a2c30 70%,#17181a 100%);
+  border-bottom:1px solid #0a0a0b}
+#shutter i:last-child{border-bottom:12px solid;border-image:var(--hazard) 12}
+#strobe{position:absolute;left:286px;top:429px;width:1290px;height:4px;background:var(--sig);box-shadow:0 0 18px 4px rgba(255,212,0,.7);opacity:0;z-index:21;pointer-events:none}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas><div id="bgfb"></div>
+<div id="stage">
+
+  <nav id="nav" class="panel">
+    <div class="brand">DEMO</div>
+    <div class="brandsub"><span>VOICE UNIT 01</span><b>音声制御盤</b></div>
+    <div class="hz"></div>
+    <ul id="menu">
+      <li><span class="k">01</span><span class="t">OVERVIEW<small>概要</small></span><span class="led"></span></li>
+      <li><span class="k">02</span><span class="t">BOT<small>Bot</small></span><span class="led"></span></li>
+      <li><span class="k">03</span><span class="t">SESSIONS<small>会話</small></span><span class="led"></span></li>
+      <li><span class="k">04</span><span class="t">CONSOLE<small>ログ</small></span><span class="led"></span></li>
+      <li><span class="k">05</span><span class="t">METRICS<small>計測</small></span><span class="led"></span></li>
+    </ul>
+    <div class="mini win">
+      <div><span>MEMORY</span><b>116</b></div>
+      <div><span>CALLS/MIN</span><b id="cpm">35</b></div>
+      <div><span>LLM BUDGET</span><b>41%</b></div>
+    </div>
+    <div class="mswitch">
+      <div class="lb"><span>MOTION</span><small>動きの量</small></div>
+      <div class="row"><button data-m="full">FULL</button><button data-m="calm">CALM</button><button data-m="off">OFF</button></div>
+    </div>
+    <div class="keys">KEY 1–5 : 画面切替</div>
+  </nav>
+
+  <div id="main">
+    <section class="page" data-name="overview">
+      <div class="head"><span class="no">01</span><span class="en">OVERVIEW</span><span class="ja">概要</span><span class="hz"></span>
+        <div class="clock"><div class="d"><span id="cw">WED</span><b id="cd">2026.10.28</b></div><div class="win"><span class="seg" id="ct">00:00:00</span></div></div>
+      </div>
+
+      <div class="panel" id="hero">
+        <div class="pl">Unit status<small>稼働状態</small><span class="r">PID 18244</span></div>
+        <div class="st">
+          <div class="lamp"><b></b><i></i></div>
+          <div class="stt"><div class="lb">VOICE LINK</div><div class="v">ONLINE</div><div class="jp">稼働中</div></div>
+        </div>
+        <div class="up"><div class="lb"><span>UPTIME</span><span>HH:MM:SS</span></div><div class="win"><span class="seg" id="upt">01:12:15</span></div></div>
+        <div class="hrow">
+          <div>CHANNEL<b class="jp">#雑談部屋</b></div><div>MEMBERS<b>4</b></div><div>HEALTH :8765<b>OK</b></div><div>LOCK<b>pid 22680</b></div>
+        </div>
+      </div>
+
+      <div class="panel" id="stats">
+        <div class="pl">Latency<small>応答時間</small><span class="r">15 MIN</span></div>
+        <div class="grid4">
+          <div class="cell win"><div class="k"><span>FIRST P50</span></div><div class="v"><span class="seg" id="s1">2.3</span><u>s</u></div></div>
+          <div class="cell win"><div class="k"><span>FIRST P95</span></div><div class="v"><span class="seg" id="s2">2.8</span><u>s</u></div></div>
+          <div class="cell win"><div class="k"><span>ASR P50</span></div><div class="v"><span class="seg" id="s3">770</span><u>ms</u></div></div>
+          <div class="cell win"><div class="k"><span>TOKENS/S</span></div><div class="v"><span class="seg" id="s4">60.2</span><u>t/s</u></div></div>
+        </div>
+      </div>
+
+      <div class="panel" id="chartP">
+        <div class="pl">First response<small>直近 120 回</small><span class="r"><span class="lg"><i></i>P50</span><span class="lg"><i class="d"></i>P95</span></span></div>
+        <svg id="chart" width="698" height="178" viewBox="0 0 698 178"></svg>
+      </div>
+
+      <div class="panel" id="lanesP">
+        <div class="pl">Lane load<small>レーンの負荷</small><span class="r">1000 MS WINDOW</span></div>
+        <div id="lanes"></div>
+      </div>
+
+      <div class="panel" id="logP">
+        <div class="pl">Live log<small>ログ</small><span class="r blink">● REC</span></div>
+        <div class="win" id="log"></div>
+      </div>
+
+      <div class="panel" id="chatP">
+        <div class="pl">Now talking<small>#雑談部屋</small><span class="r">4 ON CHANNEL</span></div>
+        <div id="talk"></div>
+      </div>
+    </section>
+
+    <section class="page" data-name="bot"></section>
+    <section class="page" data-name="sessions"></section>
+    <section class="page" data-name="console"></section>
+    <section class="page" data-name="metrics"></section>
+  </div>
+
+  <div id="ticker"><div class="lb">TELEMETRY</div><div class="wrap"><div id="tick"></div></div></div>
+  <div id="shutter"></div><div id="strobe"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const Q = new URLSearchParams(location.search);
+const root = document.documentElement;
+if (Q.get('bg') === 'none') { root.classList.add('clear'); document.body.classList.add('clear'); }
+
+/* ---------- 動きの量 ---------- */
+let motion = ['full', 'calm', 'off'].includes(Q.get('motion')) ? Q.get('motion')
+  : matchMedia('(prefers-reduced-motion: reduce)').matches ? 'calm' : 'full';
+
+/* ---------- 背景：流れる穴あき鋼板と、なめる光（WebGL2） ---------- */
+const cv = $('bg'), gl = Q.get('bg') === 'none' ? null : cv.getContext('webgl2');
+let raf = 0, last = 0, drawBg = () => {};
+if (gl) {
+  const vs = `#version 300 es
+  in vec2 p; void main(){ gl_Position = vec4(p,0,1); }`;
+  const fs = `#version 300 es
+  precision highp float;
+  uniform vec2 R; uniform float T;
+  out vec4 o;
+  float h(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
+  float n(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
+    return mix(mix(h(i),h(i+vec2(1,0)),f.x), mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x), f.y); }
+  void main(){
+    vec2 uv = gl_FragCoord.xy / R;
+    float px = R.y / 900.;
+    vec2 p = gl_FragCoord.xy / px;
+    p.y += T * 5.;
+    float S = 18.;
+    vec2 g = p / S; float row = floor(g.y);
+    g.x += mod(row, 2.) * .5;
+    vec2 c = fract(g) - .5;
+    float d = length(c) * S, r = 4.4, aa = 1. / px;
+    float hole = 1. - smoothstep(r - aa, r + aa, d);
+    float brush = n(vec2(p.x * .015, p.y * 1.3)) * .6 + n(vec2(p.x * .05, p.y * 3.1)) * .4;
+    float a = uv.x * .9 + uv.y * .5;
+    float pos = fract(T * .035) * 2.4 - .5;
+    float L = exp(-pow((a - pos) * 3.2, 2.));
+    vec3 plate = vec3(.098,.101,.108) + (brush - .5) * .03 + L * vec3(.085,.085,.08);
+    vec3 inner = vec3(.018) + vec3(.06) * smoothstep(r - 2.6, r, d) * clamp(-c.y * 3., 0., 1.) * (.35 + L);
+    vec3 col = mix(plate, inner, hole);
+    float ring = smoothstep(r + 1.8, r + .3, d) * (1. - hole);
+    col += ring * clamp(c.y * 3., 0., 1.) * (.025 + L * .09);
+    col -= ring * clamp(-c.y * 3., 0., 1.) * .03;
+    col *= mix(.5, 1., smoothstep(1.15, .25, length((uv - .5) * vec2(1., .8))));
+    o = vec4(col, 1);
+  }`;
+  const sh = (t, s) => { const x = gl.createShader(t); gl.shaderSource(x, s); gl.compileShader(x); return x; };
+  const pr = gl.createProgram();
+  gl.attachShader(pr, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(pr); gl.useProgram(pr);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+  const uR = gl.getUniformLocation(pr, 'R'), uT = gl.getUniformLocation(pr, 'T');
+  drawBg = t => {
+    const w = innerWidth * Math.min(devicePixelRatio, 1.5) | 0, hh = innerHeight * Math.min(devicePixelRatio, 1.5) | 0;
+    if (cv.width !== w || cv.height !== hh) { cv.width = w; cv.height = hh; gl.viewport(0, 0, w, hh); }
+    gl.uniform2f(uR, w, hh); gl.uniform1f(uT, t); gl.drawArrays(gl.TRIANGLES, 0, 3);
+  };
+} else { cv.style.display = 'none'; $('bgfb').style.display = 'block'; }
+
+const frame = ts => {   // 30fps を上限にする
+  raf = requestAnimationFrame(frame);
+  if (ts - last < 33) return;
+  last = ts; drawBg(ts / 1000);
+};
+function setMotion(m) {
+  motion = m;
+  root.classList.remove('m-full', 'm-calm', 'm-off');
+  root.classList.add('m-' + m);
+  document.querySelectorAll('.mswitch button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  cancelAnimationFrame(raf); raf = 0;
+  if (m === 'full' && gl) raf = requestAnimationFrame(frame);
+  else drawBg(14);
+}
+document.querySelectorAll('.mswitch button').forEach(b => b.onclick = () => setMotion(b.dataset.m));
+addEventListener('resize', () => { fit(); if (motion !== 'full') drawBg(14); });
+setMotion(motion);
+
+/* ---------- 舞台の拡大縮小 ---------- */
+const stage = $('stage');
+function fit() { const s = Math.min(innerWidth / 1600, innerHeight / 900);
+  stage.style.transform = `scale(${s}) translate(-50%,-50%)`; }
+fit();
+
+/* ---------- 盤のねじ ---------- */
+document.querySelectorAll('.panel').forEach(p => p.insertAdjacentHTML('afterbegin',
+  [0, 1, 2, 3].map(() => `<span class="sc" style="--r:${Math.random() * 180 | 0}deg"></span>`).join('')));
+
+/* ---------- 他の頁（大きな見出しだけ） ---------- */
+const PAGES = [['01', 'OVERVIEW', '概要'], ['02', 'BOT', 'Bot'], ['03', 'SESSIONS', '会話'], ['04', 'CONSOLE', 'ログ'], ['05', 'METRICS', '計測']];
+const pages = [...document.querySelectorAll('.page')], items = [...document.querySelectorAll('#menu li')];
+pages.slice(1).forEach((pg, k) => {
+  const [no, en, ja] = PAGES[k + 1];
+  pg.innerHTML = `<div class="head"><span class="no">${no}</span><span class="en">${en}</span><span class="ja">${ja}</span><span class="hz"></span></div>
+    <div class="big"><em>${no}</em> ${en}</div><div class="bigja">${ja}</div>
+    <div class="panel notice"><span class="sc" style="--r:20deg"></span><span class="sc" style="--r:110deg"></span><span class="sc" style="--r:70deg"></span><span class="sc" style="--r:150deg"></span>
+      <h3>MODULE NOT FITTED</h3><p>この盤はデモでは未実装です。<br>OVERVIEW に戻るには 1 を押してください。</p></div>`;
+});
+
+/* ---------- 画面切り替え：鋼のシャッターが閉じて開く ---------- */
+const shutter = $('shutter'), strobe = $('strobe');
+shutter.innerHTML = '<i></i>'.repeat(10);
+const slats = [...shutter.children];
+let cur = -1, busy = false;
+function show(i) {
+  pages.forEach((p, k) => p.classList.toggle('active', k === i));
+  items.forEach((li, k) => li.classList.toggle('on', k === i));
+  history.replaceState(null, '', location.search + '#' + pages[i].dataset.name);
+}
+async function go(i) {
+  if (i === cur || busy) return;
+  const first = cur < 0; cur = i;
+  if (first || motion === 'off') { show(i); return; }
+  busy = true;
+  items.forEach((li, k) => li.classList.toggle('on', k === i));
+  const ease = 'cubic-bezier(.6,0,.9,.4)';
+  await Promise.all(slats.map((s, k) => s.animate(
+    [{ transform: 'scaleY(0)', transformOrigin: 'top' }, { transform: 'scaleY(1)', transformOrigin: 'top' }],
+    { duration: 200, delay: k * 22, easing: ease, fill: 'forwards' }).finished));
+  show(i);
+  await strobe.animate([{ opacity: 0, transform: 'scaleX(.1)' }, { opacity: 1, transform: 'scaleX(1)', offset: .35 }, { opacity: .2 }, { opacity: 1, offset: .7 }, { opacity: 0, transform: 'scaleX(1)' }],
+    { duration: 170, easing: 'linear' }).finished;
+  await Promise.all(slats.map((s, k) => s.animate(
+    [{ transform: 'scaleY(1)', transformOrigin: 'bottom' }, { transform: 'scaleY(0)', transformOrigin: 'bottom' }],
+    { duration: 260, delay: (9 - k) * 22, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards' }).finished));
+  busy = false;
+}
+items.forEach((li, k) => li.onclick = () => go(k));
+addEventListener('keydown', e => { if (e.key >= '1' && e.key <= '5') go(+e.key - 1); });
+go(Math.max(0, pages.findIndex(p => '#' + p.dataset.name === location.hash)));
+
+/* ---------- 仮のデータ ---------- */
+const pick = a => a[Math.random() * a.length | 0], rnd = (a, b) => a + Math.random() * (b - a);
+const pad = n => String(n).padStart(2, '0');
+const now = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; };
+const seg = (el, s) => { el.textContent = s; el.dataset.g = s.replace(/\d/g, '8'); };
+const people = ['ミナモ', 'さくら', 'ハル', 'ユズ', 'ミナト'];
+const lines = ['最近なに観てます？', '古いほうの映画が好きです', 'それ、ちょっと気になりますね', '週末、鍋しない？', '駅前のパン屋また行きたい',
+  '昨日の配信見た？', 'あの曲ずっと聴いてる', 'ミナモ、今日の天気どう？', '夕方から雨みたいですよ', '引っ越しの手伝い、誰か来れる？', '豆乳鍋に一票です', 'ゲームの続きやろう'];
+const evTypes = ['LLM_CALL', 'SPEAK', 'HEARD', 'OFFER', 'REFLECT', 'WANT', 'WRITE_CHECK', 'SPEAK_END', 'VAD', 'TTS'];
+const laneNames = ['会話', '想起', '検索', '記憶', '裏'];
+
+const talk = $('talk');
+function say() {
+  const who = pick(people), me = who === 'ミナモ' ? 'me' : '';
+  talk.insertAdjacentHTML('beforeend', `<div class="n ${me}"><b>${who}</b><span>${pick(lines)}</span></div>`);
+  while (talk.children.length > 3) talk.firstChild.remove();
+}
+const logEl = $('log');
+function logLine() {
+  const t = pick(evTypes), lv = Math.random() < .04 ? 'E' : Math.random() < .08 ? 'W' : 'L';
+  const body = t === 'LLM_CALL' ? `lane=${pick(['conversation', 'recall', 'search', 'memory'])} ms=${rnd(800, 3500) | 0} tok=${rnd(900, 3400) | 0}/${rnd(40, 400) | 0}`
+    : t === 'SPEAK' ? `chars=${rnd(8, 40) | 0} first_say_ms=${rnd(500, 900) | 0}` : t === 'HEARD' ? `speaker=${pick(people.slice(1))} asr_ms=${rnd(120, 800) | 0}`
+    : `items=${rnd(0, 4) | 0} decision=d${rnd(100, 200) | 0}`;
+  logEl.insertAdjacentHTML('beforeend', `<div class="n"><span>${now()}.${pad(rnd(0, 99) | 0)}</span><span class="${lv}">${{ L: 'INFO', W: 'WARN', E: 'ERR' }[lv]}</span><span class="ty">${t}</span><span>${body}</span></div>`);
+  while (logEl.children.length > 11) logEl.firstChild.remove();
+}
+for (let i = 0; i < 3; i++) say();
+for (let i = 0; i < 12; i++) logLine();
+logEl.querySelectorAll('.n').forEach(x => x.classList.remove('n'));
+talk.querySelectorAll('.n').forEach(x => x.classList.remove('n'));
+
+$('lanes').innerHTML = laneNames.map(n => `<div class="lane"><b>${n}</b><div class="meter win"><span></span><span class="f"></span></div><i>0%</i></div>`).join('');
+const laneEls = [...document.querySelectorAll('.lane')];
+
+const chart = $('chart'), W = 698, H = 178;
+const p50 = [2.3]; for (let i = 1; i < 120; i++) p50.push(Math.min(3, Math.max(1.6, p50[i - 1] + rnd(-.22, .22))));
+const p95 = p50.map(v => v + rnd(.4, .9));
+const yOf = v => (H - 6 - v / 4.5 * (H - 14)).toFixed(1);
+function renderChart() {
+  const pts = a => a.map((v, i) => `${(34 + i / 119 * (W - 34)).toFixed(1)},${yOf(v)}`).join(' ');
+  chart.innerHTML = '<rect x="34" y="0" width="664" height="178" fill="#0c0d0e"/>'
+    + [1, 2, 3, 4].map(v => `<line x1="34" x2="${W}" y1="${yOf(v)}" y2="${yOf(v)}" stroke="#e8ecef" stroke-opacity=".09"/><text x="0" y="${+yOf(v) + 4}" font-size="12" font-family="Share Tech Mono" fill="#8b9197">${v}.0s</text>`).join('')
+    + `<polyline points="${pts(p95)}" fill="none" stroke="#e8ecef" stroke-opacity=".75" stroke-width="1.4" stroke-dasharray="5 4"/>`
+    + `<polyline points="${pts(p50)}" fill="none" stroke="#ffd400" stroke-width="2.2"/>`
+    + `<circle cx="${W - 1}" cy="${yOf(p50[119])}" r="4" fill="#ffd400"/>`;
+}
+
+/* ---------- 毎秒の更新 ---------- */
+const t0 = Date.now(), WD = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const hms = s => `${pad(s / 3600 | 0)}:${pad(s / 60 % 60 | 0)}:${pad(s % 60 | 0)}`;
+function tick() {
+  const d = new Date(), up = 4335 + (Date.now() - t0) / 1000;
+  $('cd').textContent = `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`;
+  $('cw').textContent = WD[d.getDay()];
+  seg($('ct'), now());
+  seg($('upt'), hms(up));
+  seg($('s1'), rnd(2.1, 2.5).toFixed(1));
+  seg($('s2'), rnd(2.7, 3.2).toFixed(1));
+  seg($('s3'), String(rnd(700, 820) | 0));
+  seg($('s4'), rnd(55, 65).toFixed(1));
+  $('cpm').textContent = rnd(30, 40) | 0;
+  laneEls.forEach(l => { const v = rnd(8, 90) | 0; const f = l.querySelector('.f');
+    f.style.setProperty('--w', v + '%'); f.classList.toggle('hot', v > 80); const i = l.querySelector('i'); i.textContent = v + '%'; i.classList.toggle('hot', v > 80); });
+  p50.shift(); p50.push(Math.min(3, Math.max(1.6, p50[118] + rnd(-.22, .22)))); p95.shift(); p95.push(p50[119] + rnd(.4, .9));
+  renderChart();
+}
+tick(); setInterval(tick, 1000);
+setInterval(logLine, 500);
+setInterval(say, 2500);
+const tk = Array.from({ length: 12 }, () => `${now()} ${pick(evTypes)} lane=${pick(['conversation', 'recall', 'memory'])} ms=${rnd(500, 3000) | 0}`).join('<b>▮</b>');
+$('tick').innerHTML = `<b>▮</b>${tk}<b>▮</b>${tk}`;
+</script>
+</body>
+</html>
