@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-table</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--cw-ground-solid); }
+  .grid { display: grid; grid-template-columns: 1.6fr 1fr 220px; gap: 24px; padding: 48px; box-sizing: border-box; align-content: start; }
+  cw-panel { height: 300px; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="コンテナ" sublabel="CPU の多い順"><cw-table id="containers" sort="cpu" desc max="6" key="name"></cw-table></cw-panel>
+    <cw-panel label="列を書かない表"><cw-table id="plain"></cw-table></cw-panel>
+    <cw-panel label="狭い枠"><cw-table id="narrow"></cw-table></cw-panel>
+    <cw-panel label="行がない"><cw-table id="none"></cw-table></cw-panel>
+  </div>
+</cw-stage>
+<script>
+  const m = new URLSearchParams(location.search).get('motion');
+  if (m) document.querySelector('#board').setAttribute('motion', m);
+  const $ = (id) => document.getElementById(id);
+  const columns = [
+    { key: 'name', label: '名前' }, { key: 'state', label: '状態' },
+    { key: 'cpu', label: 'CPU', unit: '%', digits: 1, warnAbove: 80 }, { key: 'mem', label: 'メモリ', unit: 'MB', warnAbove: 1500 },
+    { key: 'up', label: '稼働', unit: '日' },
+  ];
+  const rows = [
+    { name: 'homeassistant', state: '動作中', cpu: 12.4, mem: 812, up: 21 },
+    { name: 'mosquitto', state: '動作中', cpu: 0.6, mem: 18, up: 21 },
+    { name: 'frigate', state: '動作中', cpu: 86.2, mem: 1720, up: 3 },
+    { name: 'zigbee2mqtt', state: '動作中', cpu: 3.1, mem: 140, up: 21 },
+    { name: 'grafana', state: '動作中', cpu: 1.8, mem: 210, up: 9 },
+    { name: 'influxdb', state: '動作中', cpu: 7.9, mem: 960, up: 9 },
+    { name: 'backup', state: '停止', cpu: null, mem: null, up: null },
+    { name: 'node-red', state: '動作中', cpu: 2.2, mem: 175, up: 14 },
+  ];
+  $('containers').columns = columns;
+  $('containers').data = rows;
+  $('plain').data = [{ 部屋: '居間', 温度: 22.4, 湿度: 48 }, { 部屋: '寝室', 温度: 19.8, 湿度: 55 }, { 部屋: '書斎', 温度: 23.1, 湿度: 41 }];
+  $('narrow').columns = columns;
+  $('narrow').data = rows.slice(0, 4);
+  // every 2 s one container's numbers move, so the full motion flash can be seen
+  let i = 0;
+  setInterval(() => {
+    const next = rows.map((r) => ({ ...r }));
+    const r = next[i++ % 6];
+    r.cpu = Math.round((r.cpu + (Math.random() * 6 - 3)) * 10) / 10;
+    rows.splice(0, rows.length, ...next);
+    $('containers').data = next;
+  }, 2000);
+</script>
+</body>
+</html>

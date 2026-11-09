@@ -1072,6 +1072,14 @@
       "locked": "2026-11-10",
       "passes": true,
       "amendments": []
+    },
+    "T128": {
+      "title": "<cw-table>（行と列の表。数字の右寄せ、しきい値を超えた升の色、見出しを押して並べ替え）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs table` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs table catalog sourceall | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs table | grep -c '^ok   table: ' | awk '$1>=14{exit 0}{exit 1}' && grep -q 'cw-table' README.md && grep -q '37\\. .<cw-table>' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-11-10",
+      "passes": true,
+      "amendments": []
     }
   }
 }
