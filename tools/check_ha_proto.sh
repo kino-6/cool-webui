@@ -29,7 +29,10 @@ done
 attr() { printf %s "$2" | grep -o "$1=\"[0-9]*\"" | head -1 | grep -o '[0-9]*'; }
 render() { "$chrome" --user-data-dir="$profile" --headless=new --disable-gpu --virtual-time-budget=4000 --dump-dom "file://$PWD/$f?$1" 2>/dev/null; }
 # the bold animation loop really runs; quiet and motion=off never start it
-d=$(render 'variant=bold');            chk "bold animates (data-frames=$(attr data-frames "$d"))" "[ \"$(attr data-frames "$d")\" -gt 0 ]"
+d=$(render 'variant=bold')
+# a busy machine can hand back the page before its first frame: one more render, never more (a still page is 0 both times)
+[ "$(attr data-frames "$d")" -gt 0 ] 2>/dev/null || d=$(render 'variant=bold')
+chk "bold animates (data-frames=$(attr data-frames "$d"))" "[ \"$(attr data-frames "$d")\" -gt 0 ]"
 chk "bold home shows security" "printf %s \"\$d\" | grep -q 'id=\"security\"'"
 d=$(render 'variant=quiet');           chk "quiet never animates (data-frames=$(attr data-frames "$d"))" "[ \"$(attr data-frames "$d")\" -eq 0 ]"
 d=$(render 'variant=bold&motion=off'); chk "motion=off never animates (data-frames=$(attr data-frames "$d"))" "[ \"$(attr data-frames "$d")\" -eq 0 ]"

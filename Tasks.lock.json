@@ -1096,6 +1096,14 @@
       "locked": "2026-11-10",
       "passes": true,
       "amendments": []
+    },
+    "T131": {
+      "title": "試作の検査の「派手版が動く」を、描画の回が 0 のとき 1 回だけ撮り直す（機械が混んでいると 0 のまま撮られて落ちていた）",
+      "min_check": "`bash tools/check_ha_proto.sh` — 最終行が `HA_PROTO OK`",
+      "gate": "`bash tools/check_ha_proto.sh | tail -1 | grep -qx 'HA_PROTO OK' && grep -q 'one more render' tools/check_ha_proto.sh && grep -q 'quiet never animates' tools/check_ha_proto.sh` — 終了コード 0",
+      "locked": "2026-11-10",
+      "passes": true,
+      "amendments": []
     }
   }
 }
