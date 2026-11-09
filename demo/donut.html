@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-donut</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--cw-ground-solid); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr) 180px; gap: 24px; padding: 48px; box-sizing: border-box; align-content: start; }
+  cw-panel { height: 240px; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="電気の使い道" sublabel="今日"><cw-donut id="use" unit="kWh" digits="1"></cw-donut></cw-panel>
+    <cw-panel label="ディスク" sublabel="1 つなら進み具合"><cw-donut id="disk" unit="GB" max="512" label="使用"></cw-donut></cw-panel>
+    <cw-panel label="多いとき" sublabel="5 つまで"><cw-donut id="many" slices="5"></cw-donut></cw-panel>
+    <cw-panel label="狭い枠"><cw-donut id="narrow" unit="kWh" digits="1"></cw-donut></cw-panel>
+    <cw-panel label="何もない"><cw-donut id="none"></cw-donut></cw-panel>
+  </div>
+</cw-stage>
+<script>
+  const m = new URLSearchParams(location.search).get('motion');
+  if (m) document.querySelector('#board').setAttribute('motion', m);
+  const $ = (id) => document.getElementById(id);
+  const use = [{ label: 'エアコン', value: 6.2 }, { label: '冷蔵庫', value: 2.1 }, { label: '照明', value: 1.4 }, { label: 'その他の家電', value: 2.3 }];
+  $('use').data = use;
+  $('disk').data = [{ label: '写真と動画', value: 371 }];
+  $('many').data = [{ label: 'A', value: 30 }, { label: 'B', value: 22 }, { label: 'C', value: 18 }, { label: 'D', value: 12 }, { label: 'E', value: 9 }, { label: 'F', value: 6 }, { label: 'G', value: 3 }];
+  $('narrow').data = use;
+</script>
+</body>
+</html>

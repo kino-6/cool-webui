@@ -157,6 +157,11 @@
     <div class="name"><code>&lt;cw-uptime&gt;</code><a href="uptime.html">見本</a></div>
     <p>見張る対象ごとに、最近の死活を小さな升で並べ、稼働の割合と今の状態を添える。Uptime Kuma の結果もそのまま渡せる。</p>
   </article>
+  <article data-tag="cw-donut">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="電気の使い道"><cw-donut id="donut" unit="kWh" digits="1"></cw-donut></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-donut&gt;</code><a href="donut.html">見本</a></div>
+    <p>項目ごとの割合を輪で出し、真ん中に合計。項目が 1 つなら進み具合の輪になる。</p>
+  </article>
   <article data-tag="cw-battery">
     <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="電池"><cw-battery id="battery" max="5"></cw-battery></cw-panel></cw-stage></div>
     <div class="name"><code>&lt;cw-battery&gt;</code><a href="battery.html">見本</a></div>
@@ -306,6 +311,7 @@
   $('table').columns = [{ key: 'name', label: '名前' }, { key: 'cpu', label: 'CPU', unit: '%', digits: 1, warnAbove: 80 }, { key: 'mem', label: 'メモリ', unit: 'MB' }];
   $('table').data = [{ name: 'homeassistant', cpu: 12.4, mem: 812 }, { name: 'frigate', cpu: 86.2, mem: 1720 }, { name: 'mosquitto', cpu: 0.6, mem: 18 }, { name: 'influxdb', cpu: 7.9, mem: 960 }, { name: 'grafana', cpu: 1.8, mem: 210 }, { name: 'node-red', cpu: 2.2, mem: 175 }];
   { const r = (d) => Array.from({ length: 30 }, (_, i) => (d.includes(i) ? 'down' : 'up')); $('uptime').data = [{ label: 'Home Assistant', history: r([]) }, { label: 'ルーター', history: r([11, 12]) }, { label: '庭のカメラ', history: r([27, 28, 29]) }]; }
+  $('donut').data = [{ label: 'エアコン', value: 6.2 }, { label: '冷蔵庫', value: 2.1 }, { label: '照明', value: 1.4 }, { label: 'その他の家電', value: 2.3 }];
   $('battery').items = [{ name: '寝室の温度計', level: 12 }, { name: '窓センサー', level: 38 }, { name: '人感センサー', level: 64 }, { name: 'スマホ', level: 81, charging: true }, { name: '浴室の水漏れ', low: true }, { name: '鍵', level: 90 }];
   $('vacuum').now = { state: 'cleaning', battery: 72, area: 23.6, duration: 18 };
   $('timer').now = { state: 'active', end: Date.now() + 47 * 60e3, duration: 7200 };

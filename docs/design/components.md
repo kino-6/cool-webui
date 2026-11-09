@@ -43,6 +43,7 @@
 | 値 | `<cw-trend>` | 大きな数字と単位に、比べる値との差（▲ 増、▼ 減、– 変わらず）と割合、最近の推移の小さな折れ線を添える。比べる値がなければ推移の最初の値と比べる。`good` の向きの動きは良い色、逆は警告の色。新しい値は `push` で線の右に足し、それを数字にする。数でない値は線から外す。止まっている間は新しい値を待つ。`full` では線の端の点が脈打つ。幅 160px 以下では割合を隠す | `label`、`unit`、`digits`、`good`（`up` 既定 / `down` / `none`）、`points`（既定 60）、初期値 `value` | `.value`、`.data = [数]`、`.previous`、`push(数 \| [数])` |
 | 値 | `<cw-table>` | 行と列の表。列を書かなければ最初の行の key を列にする。値が全部数の列は右に寄せて `digits` 桁で出し、`warnAbove` を超えるか `warnBelow` を下回る升は警告の色。空の値は「—」。見出しを押すとその列で並べ替え、もう一度で逆にする（数は数として、言葉は日本語の順で、空は常に最後）。`max` 行より多いときは「ほか N 行」。`full` では `key` の列で同じ行と分かる行の、変わった升が光る。止まっている間は新しい値を待つ。幅が足りないときは枠の中で横に送る | `sort`（列の key）、`desc`、`max`（既定 20）、`key`（既定は最初の列） | `.columns = [{key, label, unit, digits, warnAbove, warnBelow}]`、`.data = [{key: 値}]` |
 | 値 | `<cw-uptime>` | 見張る対象ごとに、最近の死活を小さな升で横に並べ（古いものが左）、稼働の割合と今の状態（稼働中・停止・確認中・保守中・不明）を添える。死活は `up` / `down` / `pending` / `maintenance` の言葉、真偽、Uptime Kuma の 1 / 0 / 2 / 3、その数を持つ `{status}` のどれでも受ける。割合がなければ履歴の up と down から出し、今の状態がなければ最後の結果を使う。割合は 100 未満を切り捨てて小数 1 桁。最後の `points` 件を出し、足りない分は左を空ける。止まっている間は新しい値を待つ。`full` では停止中の対象の最新の升が明滅する。幅 200px 以下では升を隠す | `points`（既定 30） | `.data = [{label, history, ratio, state}]` |
+| 値 | `<cw-donut>` | 項目ごとの割合を輪で出し、真ん中に合計と単位、横に項目と割合の凡例を並べる。0 以下と数でない値は外す。`slices` 個より多いときは大きいものを残し、残りを「その他」にまとめる。項目が 1 つなら `max` に対する進み具合の輪にして、真ん中に % を出す。色は見た目の値（signal・ok・warn・text-dim と、その混ぜ色）から順に取り、項目の `color` で変えられる。止まっている間は新しい値を待つ。`full` では新しい割合へ輪が動く。幅 220px 以下では凡例を隠す | `label`、`unit`、`digits`、`max`（既定 100）、`slices`（既定 6） | `.data = [{label, value, color}]`（`<cw-bars>` と同じ形） |
 | 値 | `<cw-battery>` | 電池の残りを少ない順に、名前・横棒・% で並べる。`low` 以下は警告の色にして「少ない」と読ませる。充電中は横棒を良い色にして「充電中」と添える。値の読めないものは「—」で最後に、少ないかどうかだけ分かるもの（`low: true` は「少ない」、`low: false` は「十分」）はその手前に置く。`max` 件より多いときは「ほか N 件」。止まっている間は新しい値を待つ。`full` では少ない横棒が明滅する（止まっている間と `calm` では止まる）。幅 200px 以下では横棒を隠す | `low`（既定 20）、`max`（既定 8） | `.items = [{name, level, charging, low}]`（level は 0〜100） |
 | 値 | `<cw-timer>` | 残り時間を数字（1 時間以上は h:mm:ss）と、減っていく帯で出す。動作中は終わる時刻まで 1 秒ごとに数え、一時停止と待機は渡された残りを出す。待機で残りが無ければ全体の長さを出す。動作中に終わる時刻を過ぎると「終了」に変え、`cw-done` を 1 回だけ出す。止まっている間は数字が止まり、新しい値は待つ。再開すると追いつく。`full` では終わった数字が点滅する | `label` | `.now = {state, end, remaining, duration}`（state は `active` / `paused` / `idle` / `done`、end は時刻、remaining と duration は秒） |
 | 値 | `<cw-person>` | 人ごとに、写真（無ければ名前の頭文字）、名前、居場所（`home` は「在宅」、`not_home` は「外出」、ほかはゾーンの名前のまま）、いつからそこにいるか（「25分前から」）を並べる。在宅の人を先にし、輪を良い色にする。時間は 1 分ごとに見直す（止まっている間は見直さない）。止まっている間は新しい値を待つ。`full` では在宅の人の輪が呼吸する。幅 220px 以下では「いつから」を隠す | なし | `.people = [{name, place, since, picture}]`（since は時刻） |
@@ -214,7 +215,7 @@ usage.md の示唆 2 は「接続そのものは部品集に入れない」と�
 - **値を持たない部品に当たったとき**: `cw-panel` など、下の表に無い部品は `"bad-prop"`。`push` に `prop` を付けたときは `"bad-op"`
 - **不明な op**: `op` は `set` と `push` だけ。それ以外は何もせず `cw-source-error`（`"bad-op"`）
 - **壊れた JSON**: その 1 件を捨てて `cw-source-error`（`"bad-json"`）。接続は切らない
-- **既定の prop**: `prop` を省いたときの書き込み先は部品ごとに決める。stat は `value`、status は `state`、bars は `data`、chart は `set` なら `data`。後から足した部品は、`.now` を持つもの（media・weather・vacuum・timer・cover・area・sky・alarm）は `now`、trend は `value`（`push` も受ける）、table・uptime は `data`、一覧を持つもの（battery・todo は `items`、person は `people`、agenda は `events`）はその一覧、switch は `on`、camera は `src`、dial は `value`、floorplan は `rooms`、flow は `links`、ring は `text`（2026-11-04、T120）。log・feed・ticker は `push` だけを受け、`set` は `"bad-op"` にする。逆に、stat・status・bars は `set` だけを受け、`push` が来たら `"bad-op"` にする
+- **既定の prop**: `prop` を省いたときの書き込み先は部品ごとに決める。stat は `value`、status は `state`、bars は `data`、chart は `set` なら `data`。後から足した部品は、`.now` を持つもの（media・weather・vacuum・timer・cover・area・sky・alarm）は `now`、trend は `value`（`push` も受ける）、table・uptime・donut は `data`、一覧を持つもの（battery・todo は `items`、person は `people`、agenda は `events`）はその一覧、switch は `on`、camera は `src`、dial は `value`、floorplan は `rooms`、flow は `links`、ring は `text`（2026-11-04、T120）。log・feed・ticker は `push` だけを受け、`set` は `"bad-op"` にする。逆に、stat・status・bars は `set` だけを受け、`push` が来たら `"bad-op"` にする
 - **1 回に受け取る形**: WebSocket の 1 メッセージ、SSE の 1 イベント、一定間隔の取得の 1 応答、`postMessage` の 1 回は、どれも「JSON の通知 1 個」か「通知の配列」のどちらか。改行で区切った複数の JSON は受けず、`"bad-json"` にする
 - **配列の途中で失敗したとき**: 失敗した 1 件だけ `cw-source-error` を出して飛ばし、残りは続ける
 - **`id` は任意**: 付いていれば重複の除去に使う。無ければ毎回適用する。部品の項目（log・feed の `id?`）とは別物で、通知の `id` は `<cw-source>` だけが見る
@@ -366,7 +367,7 @@ Home Assistant 向けの方向（CHARTER.md）に合わせ、カードが使う�
 36. `<cw-trend>`（数字に、前との差の矢印と最近の推移の小さな線を添える）
 37. `<cw-table>`（行と列の表）
 38. `<cw-uptime>`（死活の記録を四角の並びで出す）
-39. cw-donut（割合の輪）
+39. `<cw-donut>`（割合の輪）
 40. cw-heatmap（日付や時間帯の升目の濃淡）
 41. cw-timeline（状態の帯を時間の軸に並べる）
 
