@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-trend</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--cw-ground-solid); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr) 150px; gap: 24px; padding: 48px; box-sizing: border-box; align-content: start; }
+  cw-panel { height: 220px; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="消費電力" sublabel="今日"><cw-trend id="power" unit="W"></cw-trend></cw-panel>
+    <cw-panel label="電気代" sublabel="1 kWh あたり"><cw-trend id="price" unit="円" digits="1" good="down"></cw-trend></cw-panel>
+    <cw-panel label="室温" sublabel="居間"><cw-trend id="temp" unit="°C" digits="1" good="none"></cw-trend></cw-panel>
+    <cw-panel label="狭い枠"><cw-trend id="narrow" unit="%"></cw-trend></cw-panel>
+    <cw-panel label="横ばい"><cw-trend id="flat" unit="ppm"></cw-trend></cw-panel>
+    <cw-panel label="値が来ていない"><cw-trend id="none" unit="W"></cw-trend></cw-panel>
+    <cw-panel label="1 秒ごとに足す" sublabel="push"><cw-trend id="live" unit="Mbps" points="30"></cw-trend></cw-panel>
+  </div>
+</cw-stage>
+<script>
+  const m = new URLSearchParams(location.search).get('motion');
+  if (m) document.querySelector('#board').setAttribute('motion', m);
+  const $ = (id) => document.getElementById(id);
+  $('power').data = [320, 340, 310, 420, 610, 580, 450, 470, 520, 690, 740, 812];
+  $('power').value = 812;
+  $('price').data = [31.2, 30.8, 32.5, 33.9, 33.1, 34.6, 35.8, 34.2, 32.9, 31.4, 29.8, 28.7];
+  $('price').value = 28.7;
+  $('temp').data = [21.8, 21.9, 22.1, 22.4, 22.3, 22.0, 21.7];
+  $('temp').value = 21.7;
+  $('temp').previous = 22.4;
+  $('narrow').data = [40, 44, 47, 52, 58];
+  $('narrow').value = 58;
+  $('flat').data = [420, 420, 420, 420];
+  $('flat').value = 420;
+  $('live').push([82, 85, 79, 90, 88]);
+  setInterval(() => $('live').push(Math.round(60 + Math.random() * 50)), 1000);
+</script>
+</body>
+</html>

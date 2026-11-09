@@ -31,6 +31,7 @@ export { CwSky } from './sky.js';
 export { CwAlarm } from './alarm.js';
 export { CwTodo } from './todo.js';
 export { CwDial } from './dial.js';
+export { CwTrend } from './trend.js';
 
 /** The package version, filled in from package.json at build time. */
 export const version = __CW_VERSION__;

@@ -442,3 +442,4 @@
 - T124 check_doc --check-urls は、待ち直しても 429 のままのリンクを、どのサイトでも「rate limited (429), not judged」と出して落とさない。getrektlabs.com は、この機械からも別の経路からも 429 で、頁を確かめられなかった（blocked-hosts.txt には載せていない）。404 などは今までどおり落とす。
 - T125 所有者の指摘（外のサイトへの自動のアクセスは許可していない）。check_doc は、CHECK_DOC_ONLINE=1 のときだけ外のサイトを開き、それ以外はこの機械の中（127.0.0.1）のテスト用サーバーだけを開く。自己検査は手元のサーバーと、接続を数えるだけの代わりのプロキシで確かめる。
 - T126 テーマ Mocha・Latte（初めての明るいテーマ）・Dracula・Nord（themes.md の需要の順、どれも MIT の配色で、CSS の先頭に出典）。カタログと家の見本の切り替えの帯をテーマの色にした。読みやすさの基準に合わせ、Latte の薄い文字は subtext1、Nord の警告は nord12（橙）にした。
+- T127 `<cw-trend>`。比べる値がなければ推移の最初の値と比べる。`good`（up / down / none）で差の色を決める。`push` で線に足して数字にするので、`<cw-source>` の push も受ける。カタログと README に足し、components.md に 4 回目の順番 36〜41 を書いた。

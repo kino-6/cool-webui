@@ -1064,6 +1064,14 @@
       "locked": "2026-11-10",
       "passes": true,
       "amendments": []
+    },
+    "T127": {
+      "title": "<cw-trend>（数字に、前との差の矢印と最近の推移の小さな線を添える）",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs trend` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs trend catalog sourceall | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs trend | grep -c '^ok   trend: ' | awk '$1>=14{exit 0}{exit 1}' && grep -q 'cw-trend' README.md && grep -q '36\\. .<cw-trend>' docs/design/components.md` — 終了コード 0",
+      "locked": "2026-11-10",
+      "passes": true,
+      "amendments": []
     }
   }
 }
