@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-uptime</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--cw-ground-solid); }
+  .grid { display: grid; grid-template-columns: 1.6fr 1fr 180px; gap: 24px; padding: 48px; box-sizing: border-box; align-content: start; }
+  cw-panel { height: 300px; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="見張り" sublabel="1 分ごと"><cw-uptime id="sites"></cw-uptime></cw-panel>
+    <cw-panel label="Uptime Kuma の形" sublabel="0〜3 の数"><cw-uptime id="kuma" points="20"></cw-uptime></cw-panel>
+    <cw-panel label="狭い枠"><cw-uptime id="narrow"></cw-uptime></cw-panel>
+    <cw-panel label="何もない"><cw-uptime id="none"></cw-uptime></cw-panel>
+  </div>
+</cw-stage>
+<script>
+  const m = new URLSearchParams(location.search).get('motion');
+  if (m) document.querySelector('#board').setAttribute('motion', m);
+  const $ = (id) => document.getElementById(id);
+  const run = (n, down = [], pend = [], mnt = []) => Array.from({ length: n }, (_, i) => (down.includes(i) ? 'down' : pend.includes(i) ? 'pending' : mnt.includes(i) ? 'maintenance' : 'up'));
+  const sites = [
+    { label: 'Home Assistant', history: run(30) },
+    { label: 'ルーター', history: run(30, [11, 12]) },
+    { label: 'NAS', history: run(30, [], [], [20, 21, 22]), ratio: 99.92 },
+    { label: '庭のカメラ', history: run(30, [27, 28, 29]) },
+    { label: 'バックアップ', history: run(12, [], [11]) },
+  ];
+  $('sites').data = sites;
+  $('kuma').data = [
+    { label: 'api', history: [1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((status) => ({ status })) },
+    { label: 'web', history: [1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 3, 3, 1, 1] },
+  ];
+  $('narrow').data = sites.slice(0, 4);
+</script>
+</body>
+</html>

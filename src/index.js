@@ -33,6 +33,7 @@ export { CwTodo } from './todo.js';
 export { CwDial } from './dial.js';
 export { CwTrend } from './trend.js';
 export { CwTable } from './table.js';
+export { CwUptime } from './uptime.js';
 
 /** The package version, filled in from package.json at build time. */
 export const version = __CW_VERSION__;
