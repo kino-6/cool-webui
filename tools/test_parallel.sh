@@ -8,18 +8,25 @@ fail=0
 chk() { if eval "$2" >/dev/null 2>&1; then echo "ok   $1"; else echo "FAIL $1"; fail=1; fi; }
 dir=$(mktemp -d)
 trap 'rm -rf "$dir" tools/tests/selftest-par-*.mjs demo/_par.html dist/_par.js themes/_par.css' EXIT
-# throwaway suites: two that wait 1 and 1.2 s (the first named finishes last) and one that fails
-mk() { printf "export const demo = 'blank.html';\nexport async function run(page, check) { await new Promise((r) => setTimeout(r, %s)); check('%s', %s); }\n" "$2" "$1" "$3" > tools/tests/selftest-par-$1.mjs; }
+# throwaway suites: two that wait 1 and 1.2 s (the first named finishes last) and one that fails;
+# each writes when it starts and ends to $PAR_LOG, so running at once is seen as overlap, whatever else loads the machine
+mk() { cat > tools/tests/selftest-par-$1.mjs <<JS
+import { appendFileSync } from 'node:fs';
+const log = (w) => process.env.PAR_LOG && appendFileSync(process.env.PAR_LOG, '$1 ' + w + ' ' + Date.now() + '\\n');
+export const demo = 'blank.html';
+export async function run(page, check) { log('start'); await new Promise((r) => setTimeout(r, $2)); log('end'); check('$1', $3); }
+JS
+}
 mk slow 1200 true; mk fast 1000 true; mk bad 100 false
 
-# warm up once so neither timing below pays for a cold start
-CW_JOBS=1 node tools/test_components.mjs base >/dev/null
-s=$(date +%s%N); out=$(CW_JOBS=2 node tools/test_components.mjs selftest-par-slow selftest-par-fast); rc=$?; t2=$(( ($(date +%s%N) - s) / 1000000 ))
+# overlap: each started before the other ended
+at() { awk -v k="$2 $3" '$1" "$2==k{print $3}' "$1"; }
+overlap() { [ "$(at "$1" slow start)" -lt "$(at "$1" fast end)" ] && [ "$(at "$1" fast start)" -lt "$(at "$1" slow end)" ]; }
+out=$(PAR_LOG=$dir/two CW_JOBS=2 node tools/test_components.mjs selftest-par-slow selftest-par-fast); rc=$?
 chk "lines come in the order named" "[ \"\$(printf %s \"\$out\" | grep -o 'selftest-par-[a-z]*' | uniq | paste -sd, -)\" = selftest-par-slow,selftest-par-fast ]"
-s=$(date +%s%N); CW_JOBS=1 node tools/test_components.mjs selftest-par-slow selftest-par-fast >/dev/null; t1=$(( ($(date +%s%N) - s) / 1000000 ))
-# one after the other waits 2.2 s, at once 1.2 s: at once must save at least 0.7 s of the 1 s
-chk "two jobs run two suites at once ($t2 ms against $t1 ms)" "[ $rc -eq 0 ] && [ $(( t1 - t2 )) -ge 700 ]"
-chk "one job runs them one after the other ($t1 ms)" "[ $t1 -ge 2200 ]"
+PAR_LOG=$dir/one CW_JOBS=1 node tools/test_components.mjs selftest-par-slow selftest-par-fast >/dev/null
+chk "two jobs overlap the two suites ($(tr '\n' ' ' < $dir/two))" "[ $rc -eq 0 ] && overlap $dir/two"
+chk "one job runs them one after the other ($(tr '\n' ' ' < $dir/one))" "[ -s $dir/one ] && ! overlap $dir/one"
 out=$(CW_JOBS=2 node tools/test_components.mjs selftest-par-bad selftest-par-fast); rc=$?
 chk "a failing suite fails a parallel run" "[ $rc -ne 0 ] && printf %s \"\$out\" | tail -1 | grep -qx 'COMPONENTS FAIL (1)'"
 

@@ -1080,6 +1080,14 @@
       "locked": "2026-11-10",
       "passes": true,
       "amendments": []
+    },
+    "T129": {
+      "title": "並列実行の自己検査を、実時間の差ではなく各検査の開始と終了が重なったかで確かめる（機械が混んでいると落ちていた）",
+      "min_check": "`bash tools/test_parallel.sh` — 最終行が `PARALLEL OK`",
+      "gate": "`bash tools/test_parallel.sh | tail -1 | grep -qx 'PARALLEL OK' && bash tools/test_parallel.sh | grep -q '^ok   two jobs overlap the two suites' && ! grep -q 't1 - t2' tools/test_parallel.sh` — 終了コード 0",
+      "locked": "2026-11-10",
+      "passes": true,
+      "amendments": []
     }
   }
 }
