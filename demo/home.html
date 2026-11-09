@@ -70,9 +70,9 @@
 
   /* switches: macOS `open` drops ?query from file URLs, so the page offers its own */
   .pick { position: fixed; top: 8px; right: 8px; z-index: 10; display: flex; gap: 6px; }
-  .pick div { display: flex; align-items: center; border-radius: 999px; overflow: hidden; background: rgb(0 0 0 / .55); }
-  .pick span { font: 500 12px system-ui, sans-serif; color: #8a8a8a; padding: 0 4px 0 12px; }
-  .pick button { font: 500 12px system-ui, sans-serif; color: #cfcfcf; background: none; border: 0; padding: 6px 11px; cursor: pointer; }
+  .pick div { display: flex; align-items: center; border-radius: 999px; overflow: hidden; background: var(--cw-surface); border: var(--cw-border); }
+  .pick span { font: 500 12px system-ui, sans-serif; color: var(--cw-text-dim); padding: 0 4px 0 12px; }
+  .pick button { font: 500 12px system-ui, sans-serif; color: var(--cw-text); background: none; border: 0; padding: 6px 11px; cursor: pointer; }
   .pick button[aria-pressed='true'] { background: #ededed; color: #121212; }
 </style>
 <body>

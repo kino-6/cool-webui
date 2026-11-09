@@ -33,14 +33,14 @@
 
   /* the same switches as the home sample: macOS `open` drops ?query from file URLs */
   .pick { position: fixed; top: 8px; right: 8px; z-index: 10; display: flex; gap: 6px; }
-  .pick div { display: flex; align-items: center; border-radius: 999px; overflow: hidden; background: rgb(0 0 0 / .55); }
-  .pick span { font: 500 12px system-ui, sans-serif; color: #8a8a8a; padding: 0 4px 0 12px; }
-  .pick button { font: 500 12px system-ui, sans-serif; color: #cfcfcf; background: none; border: 0; padding: 6px 11px; cursor: pointer; }
-  .pick button[aria-pressed='true'] { background: #ededed; color: #121212; }
+  .pick div { display: flex; align-items: center; border-radius: 999px; overflow: hidden; background: var(--cw-surface); border: var(--cw-border); }
+  .pick span { font: 500 12px system-ui, sans-serif; color: var(--cw-text-dim); padding: 0 4px 0 12px; }
+  .pick button { font: 500 12px system-ui, sans-serif; color: var(--cw-text); background: none; border: 0; padding: 6px 11px; cursor: pointer; }
+  .pick button[aria-pressed='true'] { background: var(--cw-signal); color: var(--cw-text-on); }
 </style>
 <body>
 <nav class="pick" aria-label="見た目と動き">
-  <div><button data-theme="tile">タイル</button><button data-theme="glass">ガラス</button><button data-theme="game">ゲーム</button></div>
+  <div><button data-theme="tile">タイル</button><button data-theme="glass">ガラス</button><button data-theme="game">ゲーム</button><button data-theme="mocha">Mocha</button><button data-theme="latte">Latte</button><button data-theme="dracula">Dracula</button><button data-theme="nord">Nord</button></div>
   <div role="group" aria-label="動き"><span>動き</span><button data-motion="off">なし</button><button data-motion="calm">控えめ</button><button data-motion="full">多め</button></div>
 </nav>
 <header>

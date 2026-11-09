@@ -1,0 +1,22 @@
+/* Nord look: the Nord palette, cool polar-night tiles, frost accent. */
+/* Colours from the Nord palette (nordtheme/nord, src/nord.css), MIT, (c) Arctic Ice Studio and Sven Greb. https://github.com/nordtheme/nord */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500&display=swap');
+
+:root {
+  --cw-ground: #2E3440;
+  --cw-ground-solid: #2E3440;
+  --cw-surface: #3B4252;
+  --cw-surface-on: #ECEFF4;
+  --cw-text-on: #2E3440;
+  --cw-border: 1px solid rgba(236, 239, 244, 0.07);
+  --cw-well: #343B49;
+  --cw-text: #ECEFF4;
+  --cw-text-dim: #B4BCCB;
+  --cw-signal: #88C0D0;
+  --cw-ok: #A3BE8C;
+  --cw-warn: #D08770; /* nord12 (orange): nord11 red is under 3:1 on the tiles */
+  --cw-radius: 14px;
+  --cw-blur: none;
+  --cw-font: Inter, 'Noto Sans JP', system-ui, sans-serif;
+  --cw-background-kind: plain;
+}

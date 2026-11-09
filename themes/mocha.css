@@ -1,0 +1,22 @@
+/* Mocha look: the dark flavour of the Catppuccin palette, flat tiles, mauve accent. */
+/* Colours from catppuccin/palette (palette.json), MIT, (c) Catppuccin. https://github.com/catppuccin/catppuccin */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500&display=swap');
+
+:root {
+  --cw-ground: #1E1E2E;
+  --cw-ground-solid: #1E1E2E;
+  --cw-surface: #313244;
+  --cw-surface-on: #CBA6F7;
+  --cw-text-on: #1E1E2E;
+  --cw-border: 1px solid rgba(205, 214, 244, 0.08);
+  --cw-well: #181825;
+  --cw-text: #CDD6F4;
+  --cw-text-dim: #A6ADC8;
+  --cw-signal: #CBA6F7;
+  --cw-ok: #A6E3A1;
+  --cw-warn: #F38BA8;
+  --cw-radius: 14px;
+  --cw-blur: none;
+  --cw-font: Inter, 'Noto Sans JP', system-ui, sans-serif;
+  --cw-background-kind: plain;
+}

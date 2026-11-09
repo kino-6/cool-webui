@@ -3,7 +3,7 @@
  *
  *   type: custom:cw-ha-card
  *   title: 居間
- *   look: tile          # tile (default), glass or game
+ *   look: tile          # tile (default), glass, game, mocha, latte (light), dracula or nord
  *   motion: calm        # calm (default), full or off
  *   entities:
  *     - { entity: sensor.living_temp, kind: stat, label: 室温 }
@@ -36,6 +36,10 @@ import { resolveMotion } from '../src/core.js';
 import tile from '../themes/tile.css';
 import glass from '../themes/glass.css';
 import game from '../themes/game.css';
+import mocha from '../themes/mocha.css';
+import latte from '../themes/latte.css';
+import dracula from '../themes/dracula.css';
+import nord from '../themes/nord.css';
 
 const KINDS = ['stat', 'status', 'bars', 'switch', 'camera', 'media', 'agenda', 'weather', 'dial', 'battery', 'vacuum', 'timer', 'cover', 'person', 'area', 'sky', 'alarm', 'todo', 'floorplan', 'flow'];
 const DRAWN = ['floorplan', 'flow'];
@@ -80,7 +84,7 @@ const stamp = (v) => (/^\d{4}-\d{2}-\d{2}[T ]\d/.test(v ?? '') ? Date.parse(v) :
 const DRAWN_HEIGHT = 320;
 const CAMERA_HEIGHT = 200;
 const LAMP = '#ffb35c'; // a light with no colour attribute glows warm white
-const THEMES = { tile, glass, game };
+const THEMES = { tile, glass, game, mocha, latte, dracula, nord };
 
 /** Turn a theme file's :root block into rules for the card's shadow root (drop the font @import). */
 function themeCss(text) {
@@ -101,7 +105,7 @@ export class CwHaCard extends HTMLElement {
   /** Validate and keep the card config; Home Assistant shows a thrown error in the card editor. */
   setConfig(config) {
     if (!config || !Array.isArray(config.entities) || config.entities.length === 0) throw new Error('entities is required (a non-empty list)');
-    if (config.look && !Object.hasOwn(THEMES, config.look)) throw new Error(`look must be tile, glass or game, not ${config.look}`);
+    if (config.look && !Object.hasOwn(THEMES, config.look)) throw new Error(`look must be one of ${Object.keys(THEMES).join(', ')}, not ${config.look}`);
     if (config.motion && !MOTIONS.includes(config.motion)) throw new Error(`motion must be one of ${MOTIONS.join(', ')}, not ${config.motion}`);
     for (const [i, row] of config.entities.entries()) {
       if (!KINDS.includes(row?.kind)) throw new Error(`entities[${i}].kind must be one of ${KINDS.join(', ')}`);

@@ -1056,6 +1056,14 @@
       "locked": "2026-11-07",
       "passes": true,
       "amendments": []
+    },
+    "T126": {
+      "title": "テーマ Mocha・Latte（明るい）・Dracula・Nord を足し、カタログとカードで選べるようにする。全部のテーマで値がそろい、読みやすさの基準を満たす",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs themes` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs themes catalog hacard homepick | tail -1 | grep -qx 'COMPONENTS OK' && node tools/test_components.mjs themes | grep -c '^ok   themes: ' | awk '$1>=10{exit 0}{exit 1}' && grep -q 'latte' README.md` — 終了コード 0",
+      "locked": "2026-11-10",
+      "passes": true,
+      "amendments": []
     }
   }
 }

@@ -1,0 +1,22 @@
+/* Latte look: the light flavour of the Catppuccin palette, white tiles on a pale ground, purple accent. */
+/* Colours from catppuccin/palette (palette.json), MIT, (c) Catppuccin. https://github.com/catppuccin/catppuccin */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500&display=swap');
+
+:root {
+  --cw-ground: #E6E9EF;
+  --cw-ground-solid: #E6E9EF;
+  --cw-surface: #EFF1F5;
+  --cw-surface-on: #8839EF;
+  --cw-text-on: #EFF1F5;
+  --cw-border: 1px solid rgba(76, 79, 105, 0.14);
+  --cw-well: #DCE0E8;
+  --cw-text: #4C4F69;
+  --cw-text-dim: #5C5F77; /* subtext1: subtext0 is under 4.5:1 on the white tiles */
+  --cw-signal: #8839EF;
+  --cw-ok: #40A02B;
+  --cw-warn: #D20F39;
+  --cw-radius: 14px;
+  --cw-blur: none;
+  --cw-font: Inter, 'Noto Sans JP', system-ui, sans-serif;
+  --cw-background-kind: plain;
+}

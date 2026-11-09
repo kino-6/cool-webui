@@ -1,0 +1,22 @@
+/* Dracula look: the Dracula palette, dark purple-grey tiles, purple accent. */
+/* Colours from the Dracula colour palette (dracula/dracula-theme), MIT, (c) Dracula Theme. https://github.com/dracula/dracula-theme */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500&display=swap');
+
+:root {
+  --cw-ground: #282A36;
+  --cw-ground-solid: #282A36;
+  --cw-surface: #343746;
+  --cw-surface-on: #F8F8F2;
+  --cw-text-on: #282A36;
+  --cw-border: 1px solid rgba(248, 248, 242, 0.07);
+  --cw-well: #21222C;
+  --cw-text: #F8F8F2;
+  --cw-text-dim: #A4ACC9;
+  --cw-signal: #BD93F9;
+  --cw-ok: #50FA7B;
+  --cw-warn: #FF5555;
+  --cw-radius: 14px;
+  --cw-blur: none;
+  --cw-font: Inter, 'Noto Sans JP', system-ui, sans-serif;
+  --cw-background-kind: plain;
+}
