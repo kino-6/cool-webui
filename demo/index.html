@@ -167,6 +167,11 @@
     <div class="name"><code>&lt;cw-heatmap&gt;</code><a href="heatmap.html">見本</a></div>
     <p>日ごとの暦の升目か、曜日と時刻の升目を、値の大きさで色の濃さを変えて並べる。</p>
   </article>
+  <article data-tag="cw-timeline">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="照明と機器" sublabel="24 時間"><cw-timeline id="timeline"></cw-timeline></cw-panel></cw-stage></div>
+    <div class="name"><code>&lt;cw-timeline&gt;</code><a href="timeline.html">見本</a></div>
+    <p>対象ごとに、どの時刻にどの状態だったかを、時刻の軸に沿った帯で出す。</p>
+  </article>
   <article data-tag="cw-battery">
     <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="電池"><cw-battery id="battery" max="5"></cw-battery></cw-panel></cw-stage></div>
     <div class="name"><code>&lt;cw-battery&gt;</code><a href="battery.html">見本</a></div>
@@ -318,6 +323,7 @@
   { const r = (d) => Array.from({ length: 30 }, (_, i) => (d.includes(i) ? 'down' : 'up')); $('uptime').data = [{ label: 'Home Assistant', history: r([]) }, { label: 'ルーター', history: r([11, 12]) }, { label: '庭のカメラ', history: r([27, 28, 29]) }]; }
   $('donut').data = [{ label: 'エアコン', value: 6.2 }, { label: '冷蔵庫', value: 2.1 }, { label: '照明', value: 1.4 }, { label: 'その他の家電', value: 2.3 }];
   { const n0 = new Date(); $('heatmap').data = Array.from({ length: 91 }, (_, n) => { const d = new Date(n0.getFullYear(), n0.getMonth(), n0.getDate() - n), w = (d.getDay() + 6) % 7; return { date: d.getTime(), value: 6 + (w >= 5 ? 4 : 0) + 3 * Math.sin(n / 9) }; }); }
+  { const H = 3600e3, a = (h) => Date.now() - h * H; $('timeline').data = [{ label: '居間の照明', spans: [{ from: a(23), to: a(21.5), state: 'on' }, { from: a(6), to: a(1), state: 'on' }] }, { label: 'エアコン', spans: [{ from: a(20), to: a(14), state: 'heat' }, { from: a(9), to: a(7), state: 'cool' }, { from: a(4), state: 'heat' }] }]; }
   $('battery').items = [{ name: '寝室の温度計', level: 12 }, { name: '窓センサー', level: 38 }, { name: '人感センサー', level: 64 }, { name: 'スマホ', level: 81, charging: true }, { name: '浴室の水漏れ', low: true }, { name: '鍵', level: 90 }];
   $('vacuum').now = { state: 'cleaning', battery: 72, area: 23.6, duration: 18 };
   $('timer').now = { state: 'active', end: Date.now() + 47 * 60e3, duration: 7200 };

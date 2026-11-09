@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-timeline</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--cw-ground-solid); }
+  .grid { display: grid; grid-template-columns: 1.6fr 1fr 220px; gap: 24px; padding: 48px; box-sizing: border-box; align-content: start; }
+  cw-panel { min-height: 220px; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="照明と機器" sublabel="24 時間"><cw-timeline id="day"></cw-timeline></cw-panel>
+    <cw-panel label="洗濯機" sublabel="6 時間、色を指定"><cw-timeline id="washer" hours="6"></cw-timeline></cw-panel>
+    <cw-panel label="狭い枠"><cw-timeline id="narrow"></cw-timeline></cw-panel>
+    <cw-panel label="何もない"><cw-timeline id="none"></cw-timeline></cw-panel>
+  </div>
+</cw-stage>
+<script>
+  const m = new URLSearchParams(location.search).get('motion');
+  if (m) document.querySelector('#board').setAttribute('motion', m);
+  const $ = (id) => document.getElementById(id);
+  const H = 3600e3, now = Date.now(), ago = (h) => now - h * H;
+  const day = [
+    { label: '居間の照明', spans: [{ from: ago(23), to: ago(21.5), state: 'on' }, { from: ago(6), to: ago(1), state: 'on' }, { from: ago(0.5), state: 'on' }] },
+    { label: '寝室の照明', spans: [{ from: ago(17), to: ago(16.2), state: 'on' }, { from: ago(2), to: ago(1.2), state: 'on' }] },
+    { label: 'エアコン', spans: [{ from: ago(20), to: ago(14), state: 'heat' }, { from: ago(9), to: ago(7), state: 'cool' }, { from: ago(4), state: 'heat' }] },
+    { label: '玄関', spans: [{ from: ago(13), to: ago(12.8), state: 'open' }, { from: ago(3), to: ago(2.9), state: 'open' }, { from: ago(2.9), to: ago(0), state: 'closed' }] },
+  ];
+  $('day').data = day;
+  $('washer').colors = { 洗い: 'var(--cw-signal)', すすぎ: 'var(--cw-ok)', 脱水: 'var(--cw-warn)' };
+  $('washer').data = [{ label: '洗濯機', spans: [{ from: ago(5), to: ago(4.4), state: '洗い' }, { from: ago(4.4), to: ago(4.1), state: 'すすぎ' }, { from: ago(4.1), to: ago(3.9), state: '脱水' },
+    { from: ago(1.2), to: ago(0.7), state: '洗い' }, { from: ago(0.7), state: 'すすぎ' }] }];
+  $('narrow').data = day.slice(0, 2);
+</script>
+</body>
+</html>
