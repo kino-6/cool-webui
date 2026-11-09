@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cw-heatmap</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--cw-ground-solid); }
+  .grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 24px; padding: 48px; box-sizing: border-box; align-content: start; }
+  cw-panel { min-height: 200px; }
+</style>
+<body>
+<cw-stage id="board">
+  <div class="grid">
+    <cw-panel label="電気の使用量" sublabel="13 週間"><cw-heatmap id="cal" unit="kWh" digits="1"></cw-heatmap></cw-panel>
+    <cw-panel label="人の動き" sublabel="曜日と時刻"><cw-heatmap id="week" layout="week" unit="回"></cw-heatmap></cw-panel>
+    <cw-panel label="作業の記録" sublabel="30 日、10 件で最も濃い"><cw-heatmap id="short" days="30" max="10" unit="件"></cw-heatmap></cw-panel>
+    <cw-panel label="値がない"><cw-heatmap id="none" days="30"></cw-heatmap></cw-panel>
+  </div>
+</cw-stage>
+<script>
+  const m = new URLSearchParams(location.search).get('motion');
+  if (m) document.querySelector('#board').setAttribute('motion', m);
+  const $ = (id) => document.getElementById(id);
+  const now = new Date(), day = (n) => new Date(now.getFullYear(), now.getMonth(), now.getDate() - n);
+  // a usage that is higher at the weekend and in the cold weeks
+  $('cal').data = Array.from({ length: 91 }, (_, n) => { const d = day(n), w = (d.getDay() + 6) % 7; return { date: d.getTime(), value: Math.round((6 + (w >= 5 ? 4 : 0) + 3 * Math.sin(n / 9)) * 10) / 10 }; });
+  // movement by the hour over four weeks: mornings and evenings
+  const moves = [];
+  for (let n = 0; n < 28; n++) for (const h of [7, 8, 12, 18, 19, 20, 21, 22]) {
+    const d = day(n); d.setHours(h);
+    moves.push({ date: d.getTime(), value: (h >= 18 ? 3 : 1) + ((n * h) % 3) });
+  }
+  $('week').data = moves;
+  $('short').data = Array.from({ length: 30 }, (_, n) => ({ date: day(n).toLocaleDateString('sv'), value: [0, 2, 5, 8, 12, 3, 0][n % 7] }));
+</script>
+</body>
+</html>

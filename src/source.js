@@ -24,6 +24,7 @@ const RULES = {
   'cw-sky': { set: ['now'], def: 'now', push: false },
   'cw-alarm': { set: ['now'], def: 'now', push: false },
   'cw-todo': { set: ['items'], def: 'items', push: false },
+  'cw-heatmap': { set: ['data'], def: 'data', push: false },
   'cw-donut': { set: ['data'], def: 'data', push: false },
   'cw-uptime': { set: ['data'], def: 'data', push: false },
   'cw-table': { set: ['data', 'columns'], def: 'data', push: false },
