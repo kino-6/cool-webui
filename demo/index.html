@@ -18,7 +18,9 @@
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; padding: 0 32px; }
   article { display: flex; flex-direction: column; gap: 10px; padding: 14px; background: var(--cw-surface); border: var(--cw-border); border-radius: var(--cw-radius); backdrop-filter: var(--cw-blur); }
   [data-theme='game'] article:nth-child(odd) { rotate: .5deg; } [data-theme='game'] article:nth-child(even) { rotate: -.5deg; }
-  [data-theme='game'] article { box-shadow: var(--cw-shadow); }
+  article { position: relative; box-shadow: var(--cw-shadow, none); text-shadow: var(--cw-glow, none); }
+  article::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; background: var(--cw-frame-overlay, none); }
+  h1 { text-shadow: var(--cw-glow, none); }
   .preview { aspect-ratio: 16 / 10; border-radius: calc(var(--cw-radius) * .6); overflow: hidden; position: relative; }
   .preview > cw-stage { min-height: 0; }
   .preview.card { aspect-ratio: auto; overflow: visible; }
@@ -40,7 +42,7 @@
 </style>
 <body>
 <nav class="pick" aria-label="見た目と動き">
-  <div><button data-theme="tile">タイル</button><button data-theme="glass">ガラス</button><button data-theme="game">ゲーム</button><button data-theme="mocha">Mocha</button><button data-theme="latte">Latte</button><button data-theme="dracula">Dracula</button><button data-theme="nord">Nord</button></div>
+  <div><button data-theme="tile">タイル</button><button data-theme="glass">ガラス</button><button data-theme="game">ゲーム</button><button data-theme="mocha">Mocha</button><button data-theme="latte">Latte</button><button data-theme="dracula">Dracula</button><button data-theme="nord">Nord</button><button data-theme="hud">HUD</button><button data-theme="crt">端末</button><button data-theme="pixel">ドット</button><button data-theme="brutal">太枠</button><button data-theme="synthwave">ネオン</button></div>
   <div role="group" aria-label="動き"><span>動き</span><button data-motion="off">なし</button><button data-motion="calm">控えめ</button><button data-motion="full">多め</button></div>
 </nav>
 <header>
@@ -286,10 +288,12 @@
     location.search = new URLSearchParams({ theme: b.dataset.theme, motion });
   }));
   setMotion(motion);
+  // the home sample opens in the look picked here
+  document.querySelector('.home').href = `home.html?theme=${document.documentElement.dataset.theme}`;
 
   const $ = (id) => document.getElementById(id);
   const kind = getComputedStyle(document.documentElement).getPropertyValue('--cw-background-kind').trim();
-  $('bg').kind = kind === 'streaks' ? 'streaks' : 'aura';
+  $('bg').kind = ['streaks', 'grid', 'scan', 'stars', 'horizon'].includes(kind) ? kind : 'aura';
   $('bg').lights = [{ color: '#ffb35c', level: 0.9 }, { color: '#7aa2ff', level: 0.6 }, { color: '#ff7ab8', level: 0.4 }];
   $('plan').rooms = [
     { id: 'living', name: '居間', x: 0, y: 0, w: 6, h: 4.5, on: true, color: 'hsl(36 90% 62%)', level: 0.85, note: '22.4°' },

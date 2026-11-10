@@ -3,7 +3,7 @@
  *
  *   type: custom:cw-ha-card
  *   title: 居間
- *   look: tile          # tile (default), glass, game, mocha, latte (light), dracula or nord
+ *   look: tile          # tile (default), glass, game, mocha, latte (light), dracula, nord, hud, crt, pixel, brutal (light) or synthwave
  *   motion: calm        # calm (default), full or off
  *   entities:
  *     - { entity: sensor.living_temp, kind: stat, label: 室温 }
@@ -40,6 +40,11 @@ import mocha from '../themes/mocha.css';
 import latte from '../themes/latte.css';
 import dracula from '../themes/dracula.css';
 import nord from '../themes/nord.css';
+import hud from '../themes/hud.css';
+import crt from '../themes/crt.css';
+import pixel from '../themes/pixel.css';
+import brutal from '../themes/brutal.css';
+import synthwave from '../themes/synthwave.css';
 
 const KINDS = ['stat', 'status', 'bars', 'switch', 'camera', 'media', 'agenda', 'weather', 'dial', 'battery', 'vacuum', 'timer', 'cover', 'person', 'area', 'sky', 'alarm', 'todo', 'floorplan', 'flow'];
 const DRAWN = ['floorplan', 'flow'];
@@ -84,7 +89,7 @@ const stamp = (v) => (/^\d{4}-\d{2}-\d{2}[T ]\d/.test(v ?? '') ? Date.parse(v) :
 const DRAWN_HEIGHT = 320;
 const CAMERA_HEIGHT = 200;
 const LAMP = '#ffb35c'; // a light with no colour attribute glows warm white
-const THEMES = { tile, glass, game, mocha, latte, dracula, nord };
+const THEMES = { tile, glass, game, mocha, latte, dracula, nord, hud, crt, pixel, brutal, synthwave };
 
 /** Turn a theme file's :root block into rules for the card's shadow root (drop the font @import). */
 function themeCss(text) {

@@ -1,0 +1,33 @@
+/* HUD look: a science-fiction instrument screen. Thin cyan lines and corner brackets on see-through panels, glowing text, a grid with a sweeping line behind. */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Chakra+Petch:wght@400;600&family=BIZ+UDGothic&display=swap');
+
+:root {
+  --cw-ground: radial-gradient(120% 100% at 50% 0%, #07202B 0%, #020A0F 65%);
+  --cw-ground-solid: #020A0F;
+  --cw-surface: rgba(6, 34, 46, 0.62);
+  --cw-surface-on: #33E6FF;
+  --cw-text-on: #02131A;
+  --cw-border: 1px solid rgba(51, 230, 255, 0.32);
+  --cw-radius: 0;
+  --cw-blur: blur(2px);
+  --cw-well: rgba(2, 16, 22, 0.8);
+  --cw-text: #DDFBFF;
+  --cw-text-dim: #74B8C6;
+  --cw-signal: #33E6FF;
+  --cw-ok: #7DFFB2;
+  --cw-warn: #FF5C72;
+  --cw-font: 'Chakra Petch', 'BIZ UDGothic', system-ui, sans-serif;
+  --cw-background-kind: grid;
+  --cw-shadow: inset 0 0 28px rgba(51, 230, 255, 0.08);
+  --cw-glow: 0 0 6px rgba(51, 230, 255, 0.55);
+  --cw-frame-overlay:
+    linear-gradient(#33E6FF 0 0) left top / 16px 2px no-repeat, linear-gradient(#33E6FF 0 0) left top / 2px 16px no-repeat,
+    linear-gradient(#33E6FF 0 0) right top / 16px 2px no-repeat, linear-gradient(#33E6FF 0 0) right top / 2px 16px no-repeat,
+    linear-gradient(#33E6FF 0 0) left bottom / 16px 2px no-repeat, linear-gradient(#33E6FF 0 0) left bottom / 2px 16px no-repeat,
+    linear-gradient(#33E6FF 0 0) right bottom / 16px 2px no-repeat, linear-gradient(#33E6FF 0 0) right bottom / 2px 16px no-repeat;
+  --cw-label-color: #33E6FF;
+  --cw-label-on-color: #02131A;
+  --cw-label-spacing: 0.14em;
+  --cw-display-font: Orbitron, 'BIZ UDGothic', sans-serif;
+  --cw-display-weight: 700;
+}

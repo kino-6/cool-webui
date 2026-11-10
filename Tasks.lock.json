@@ -1128,6 +1128,14 @@
       "locked": "2026-11-10",
       "passes": true,
       "amendments": []
+    },
+    "T135": {
+      "title": "派手なテーマ 5 つ（hud・crt・pixel・brutal・synthwave）。枠の飾り・文字の光・背景の動きをテーマで切り替えられるようにする",
+      "min_check": "`npm run build >/dev/null && node tools/test_components.mjs looks` — 最終行が `COMPONENTS OK`",
+      "gate": "`npm run build >/dev/null && node tools/test_components.mjs looks themes catalog background hacard | tail -1 | grep -qx 'COMPONENTS OK' && grep -q 'synthwave' README.md` — 終了コード 0",
+      "locked": "2026-11-11",
+      "passes": true,
+      "amendments": []
     }
   }
 }

@@ -5,7 +5,7 @@
 ライセンス: MIT（[LICENSE](LICENSE)）。部品の中に Lit（BSD-3-Clause）を含む。
 
 HTML に置いて値を渡すだけで管理画面を組み立てられる部品集（custom element）。Home Assistant のカードとしても使える。
-見た目はタイル・ガラス・ゲーム風と、人気の配色の Mocha・Latte（明るい）・Dracula・Nord の 7 つから、動きは `calm`（既定）・`full`・`off` から、使う人が選ぶ。
+見た目はタイル・ガラス・ゲーム風、人気の配色の Mocha・Latte（明るい）・Dracula・Nord、枠や背景の動きまで変わる HUD（SF の計器）・端末（緑の画面）・ドット絵・太枠（明るい）・ネオン（80 年代）の 12 個から、動きは `calm`（既定）・`full`・`off` から、使う人が選ぶ。
 
 - 目的と範囲: [CHARTER.md](CHARTER.md)
 - 部品の設計: [docs/design/components.md](docs/design/components.md)
@@ -88,7 +88,7 @@ node tools/perf.mjs --seconds 30 --out docs/perf/$(date +%F).md   # 負荷の測
 ```yaml
 type: custom:cw-ha-card
 title: 居間
-look: tile        # tile（既定）・glass・game・mocha・latte（明るい）・dracula・nord
+look: tile        # tile（既定）・glass・game・mocha・latte（明るい）・dracula・nord・hud・crt・pixel・brutal（明るい）・synthwave
 motion: calm      # calm（既定）・full（数字が転がる、ランプが点滅する）・off
 entities:
   - { entity: sensor.living_temperature, kind: stat, label: 室温, digits: 1 }

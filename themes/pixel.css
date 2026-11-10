@@ -1,0 +1,30 @@
+/* Pixel look: an 8-bit game screen. Square panels with notched white pixel borders, a Japanese pixel face, square stars twinkling behind. */
+@import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
+
+:root {
+  --cw-ground: #10132A;
+  --cw-ground-solid: #10132A;
+  --cw-surface: #1E2550;
+  --cw-surface-on: #FFD23A;
+  --cw-text-on: #10132A;
+  --cw-border: 0 solid transparent;
+  --cw-radius: 0;
+  --cw-blur: none;
+  --cw-well: #161C3E;
+  --cw-text: #F6F6F6;
+  --cw-text-dim: #AEB8E6;
+  --cw-signal: #FFD23A;
+  --cw-ok: #62E57E;
+  --cw-warn: #FF6070;
+  --cw-font: DotGothic16, monospace;
+  --cw-background-kind: stars;
+  /* a 4px white border with the corners cut, then a hard drop shadow */
+  --cw-shadow: 0 -4px 0 0 #F6F6F6, 0 4px 0 0 #F6F6F6, -4px 0 0 0 #F6F6F6, 4px 0 0 0 #F6F6F6, 6px 10px 0 2px rgba(0, 0, 0, 0.5);
+  --cw-label-bg: #FFD23A;
+  --cw-label-color: #10132A;
+  --cw-label-pad: 1px 8px;
+  --cw-label-on-bg: #10132A;
+  --cw-label-on-color: #FFD23A;
+  --cw-display-font: DotGothic16, monospace;
+  --cw-display-weight: 400;
+}

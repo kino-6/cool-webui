@@ -1,0 +1,31 @@
+/* CRT look: an old green-phosphor terminal. Glowing green text in a monospace face, scan lines over every panel, a bright band rolling down a dark-edged screen. */
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=M+PLUS+1+Code:wght@400;600&display=swap');
+
+:root {
+  --cw-ground: radial-gradient(110% 90% at 50% 45%, #062A0E 0%, #010802 75%);
+  --cw-ground-solid: #010802;
+  --cw-surface: rgba(3, 26, 9, 0.82);
+  --cw-surface-on: #46FF72;
+  --cw-text-on: #021806;
+  --cw-border: 1px solid rgba(70, 255, 114, 0.38);
+  --cw-radius: 6px;
+  --cw-blur: none;
+  --cw-well: #021405;
+  --cw-text: #8CFF9E;
+  --cw-text-dim: #45C35C;
+  --cw-signal: #46FF72;
+  --cw-ok: #B4FF5A;
+  --cw-warn: #FFB000;
+  --cw-font: 'M PLUS 1 Code', ui-monospace, monospace;
+  --cw-background-kind: scan;
+  --cw-shadow: 0 0 22px rgba(70, 255, 114, 0.12);
+  --cw-glow: 0 0 2px rgba(70, 255, 114, 0.7), 0 0 10px rgba(70, 255, 114, 0.35);
+  --cw-frame-overlay: repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.18) 0 1px, transparent 1px 3px);
+  --cw-label-bg: #46FF72;
+  --cw-label-color: #021806;
+  --cw-label-pad: 0 6px;
+  --cw-label-on-bg: #021806;
+  --cw-label-on-color: #46FF72;
+  --cw-display-font: VT323, 'M PLUS 1 Code', monospace;
+  --cw-display-weight: 400;
+}

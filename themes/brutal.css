@@ -1,0 +1,30 @@
+/* Brutal look (light): thick black outlines and hard black shadows on cream, white panels with yellow name slabs, a dotted ground. */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap');
+
+:root {
+  --cw-ground: radial-gradient(rgba(17, 17, 17, 0.16) 1.2px, transparent 1.6px) 0 0 / 18px 18px, #FFF1D6;
+  --cw-ground-solid: #FFF1D6;
+  --cw-surface: #FFFFFF;
+  --cw-surface-on: #FFD23F;
+  --cw-text-on: #111111;
+  --cw-border: 3px solid #111111;
+  --cw-radius: 8px;
+  --cw-blur: none;
+  --cw-well: #F4EEE2;
+  --cw-text: #111111;
+  --cw-text-dim: #4D4D4D;
+  --cw-signal: #2B59FF;
+  --cw-ok: #0E8F4F;
+  --cw-warn: #E5246A;
+  --cw-font: 'Space Grotesk', 'Zen Kaku Gothic New', system-ui, sans-serif;
+  --cw-background-kind: plain;
+  --cw-shadow: 6px 6px 0 #111111;
+  --cw-tilt: -0.4deg;
+  --cw-label-bg: #FFD23F;
+  --cw-label-color: #111111;
+  --cw-label-pad: 2px 10px;
+  --cw-label-on-bg: #111111;
+  --cw-label-on-color: #FFD23F;
+  --cw-display-font: 'Space Grotesk', 'Zen Kaku Gothic New', sans-serif;
+  --cw-display-weight: 700;
+}

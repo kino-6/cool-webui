@@ -2,7 +2,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 export const demo = 'index.html';
 
-const LOOKS = ['tile', 'glass', 'game', 'mocha', 'latte', 'dracula', 'nord'];
+const LOOKS = ['tile', 'glass', 'game', 'mocha', 'latte', 'dracula', 'nord', 'hud', 'crt', 'pixel', 'brutal', 'synthwave'];
 const tokens = (name) => Object.fromEntries([...readFileSync(`themes/${name}.css`, 'utf8').matchAll(/(--cw-[a-z-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
 
 export async function run(page, check) {
@@ -19,7 +19,7 @@ export async function run(page, check) {
   const unpicked = LOOKS.filter((l) => !buttons.includes(l) || !readme.includes(l));
   check(`every look has a catalog button and a name in README's look: line (${unpicked})`, unpicked.length === 0);
   const ui = page.url().split('?')[0];
-  for (const look of ['mocha', 'latte', 'dracula', 'nord']) {
+  for (const look of ['mocha', 'latte', 'dracula', 'nord', 'hud', 'crt', 'pixel', 'brutal', 'synthwave']) {
     await page.goto(`${ui}?theme=${look}`, { waitUntil: 'load' });
     await new Promise((r) => setTimeout(r, 600));
     // contrast by WCAG relative luminance, read from the page's own computed colours
@@ -38,11 +38,11 @@ export async function run(page, check) {
   }
   const card = await page.evaluate(async () => {
     const out = [];
-    for (const look of ['mocha', 'latte', 'dracula', 'nord', 'neon']) {
+    for (const look of ['mocha', 'latte', 'dracula', 'nord', 'hud', 'crt', 'pixel', 'brutal', 'synthwave', 'neon']) {
       const c = document.createElement('cw-ha-card');
       try { c.setConfig({ look, entities: [{ entity: 'sensor.a', kind: 'stat' }] }); out.push('ok'); } catch (e) { out.push(e.message.slice(0, 20)); }
     }
     return out;
   });
-  check(`the card takes the four new looks and refuses an unknown one (${card})`, card.slice(0, 4).every((x) => x === 'ok') && card[4] !== 'ok');
+  check(`the card takes the new looks and refuses an unknown one (${card})`, card.slice(0, 9).every((x) => x === 'ok') && card[9] !== 'ok');
 }
