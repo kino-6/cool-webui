@@ -48,6 +48,7 @@
 <header>
   <h1>cool-webui 部品のカタログ</h1>
   <a class="home" href="home.html">家の見本を開く</a>
+  <a class="home" id="poster" href="poster.html">構図の見本を開く</a>
 </header>
 
 <h2>土台</h2>
@@ -174,6 +175,21 @@
     <div class="name"><code>&lt;cw-timeline&gt;</code><a href="timeline.html">見本</a></div>
     <p>対象ごとに、どの時刻にどの状態だったかを、時刻の軸に沿った帯で出す。</p>
   </article>
+  <article data-tag="cw-hero">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-hero id="hero" class="pad" name="HOME" sub="945W"></cw-hero></cw-stage></div>
+    <div class="name"><code>&lt;cw-hero&gt;</code><a href="poster.html">見本</a></div>
+    <p>画面の主役。巨大な名前を光る球の上に重ね、まわりに小さな札を置く。</p>
+  </article>
+  <article data-tag="cw-folio">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-folio class="pad" number="01" kicker="HOME" title="ホーム" style="--cw-folio-size:120px;align-items:center;justify-content:center"></cw-folio></cw-stage></div>
+    <div class="name"><code>&lt;cw-folio&gt;</code><a href="poster.html">見本</a></div>
+    <p>画面の番号を巨大に出し、横に見出しを添える。</p>
+  </article>
+  <article data-tag="cw-verdict">
+    <div class="preview"><cw-stage base="480x300" controls="none"><cw-verdict id="verdict" class="pad"></cw-verdict></cw-stage></div>
+    <div class="name"><code>&lt;cw-verdict&gt;</code><a href="poster.html">見本</a></div>
+    <p>たくさんの状態を巨大な一語で言い切り、横に一覧を添える。</p>
+  </article>
   <article data-tag="cw-battery">
     <div class="preview"><cw-stage base="480x300" controls="none"><cw-panel class="pad" label="電池"><cw-battery id="battery" max="5"></cw-battery></cw-panel></cw-stage></div>
     <div class="name"><code>&lt;cw-battery&gt;</code><a href="battery.html">見本</a></div>
@@ -290,6 +306,7 @@
   setMotion(motion);
   // the home sample opens in the look picked here
   document.querySelector('.home').href = `home.html?theme=${document.documentElement.dataset.theme}`;
+  document.getElementById('poster').href = `poster.html?theme=${document.documentElement.dataset.theme}`;
 
   const $ = (id) => document.getElementById(id);
   const kind = getComputedStyle(document.documentElement).getPropertyValue('--cw-background-kind').trim();
@@ -328,6 +345,8 @@
   $('donut').data = [{ label: 'エアコン', value: 6.2 }, { label: '冷蔵庫', value: 2.1 }, { label: '照明', value: 1.4 }, { label: 'その他の家電', value: 2.3 }];
   { const n0 = new Date(); $('heatmap').data = Array.from({ length: 91 }, (_, n) => { const d = new Date(n0.getFullYear(), n0.getMonth(), n0.getDate() - n), w = (d.getDay() + 6) % 7; return { date: d.getTime(), value: 6 + (w >= 5 ? 4 : 0) + 3 * Math.sin(n / 9) }; }); }
   { const H = 3600e3, a = (h) => Date.now() - h * H; $('timeline').data = [{ label: '居間の照明', spans: [{ from: a(23), to: a(21.5), state: 'on' }, { from: a(6), to: a(1), state: 'on' }] }, { label: 'エアコン', spans: [{ from: a(20), to: a(14), state: 'heat' }, { from: a(9), to: a(7), state: 'cool' }, { from: a(4), state: 'heat' }] }]; }
+  $('hero').tags = [{ label: '外気', value: '14.2°C' }, { label: '在宅', value: '2' }];
+  $('verdict').items = [{ label: '玄関の鍵', state: 'locked' }, { label: '寝室の窓', state: 'open' }, { label: '庭のカメラ', state: 'online' }];
   $('battery').items = [{ name: '寝室の温度計', level: 12 }, { name: '窓センサー', level: 38 }, { name: '人感センサー', level: 64 }, { name: 'スマホ', level: 81, charging: true }, { name: '浴室の水漏れ', low: true }, { name: '鍵', level: 90 }];
   $('vacuum').now = { state: 'cleaning', battery: 72, area: 23.6, duration: 18 };
   $('timer').now = { state: 'active', end: Date.now() + 47 * 60e3, duration: 7200 };

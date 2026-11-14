@@ -37,6 +37,9 @@ export { CwUptime } from './uptime.js';
 export { CwDonut } from './donut.js';
 export { CwHeatmap } from './heatmap.js';
 export { CwTimeline } from './timeline.js';
+export { CwHero } from './hero.js';
+export { CwFolio } from './folio.js';
+export { CwVerdict } from './verdict.js';
 
 /** The package version, filled in from package.json at build time. */
 export const version = __CW_VERSION__;

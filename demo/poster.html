@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cool-webui 構図の見本</title>
+<script src="theme.js"></script>
+<script src="../dist/cw.iife.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: var(--cw-ground-solid); overflow: hidden; }
+  body { background: var(--cw-ground); color: var(--cw-text); font-family: var(--cw-font); }
+  cw-stage { position: absolute; inset: 0; }
+  .at { position: absolute; }
+
+  /* the left column: name, menu with one huge word, people, events; tilted the other way from the right */
+  .side { left: 28px; top: 28px; width: 250px; height: 830px; rotate: -1.2deg; }
+  .side cw-panel { --cw-panel-padding: 18px 18px 14px; }
+  .brand { display: flex; justify-content: space-between; align-items: center; font: 800 22px var(--cw-display-font); font-stretch: var(--cw-display-stretch); }
+  .brand small { font: 600 11px ui-monospace, Menlo, monospace; padding: 3px 7px; background: var(--cw-text); color: var(--cw-ground-solid); }
+  .menu { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 2px; }
+  .menu button { all: unset; cursor: pointer; display: flex; align-items: baseline; gap: 8px; white-space: nowrap;
+    font: var(--cw-display-weight) 26px/1.08 var(--cw-display-font); font-stretch: var(--cw-display-stretch); color: var(--cw-text-dim); }
+  .menu button small { font: 500 11px ui-monospace, Menlo, monospace; opacity: .7; }
+  .menu button[aria-current='true'] { font-size: 40px; color: var(--cw-ground-solid); background: var(--cw-text); padding: 2px 10px; margin: 4px -10px; transform: var(--cw-label-skew, none); }
+  .rule { border-top: 1px dashed color-mix(in srgb, var(--cw-text) 35%, transparent); margin: 14px 0 12px; }
+  .cap { font: 600 11px ui-monospace, Menlo, monospace; letter-spacing: .12em; color: var(--cw-text-dim); margin-bottom: 8px; }
+  .people { display: grid; gap: 8px; }
+
+  /* the centre: page number, the ring and the name over it, the verdict breaking into the ring */
+  .folio { left: 320px; top: 22px; --cw-folio-size: 168px; }
+  .ring { left: 470px; top: 40px; width: 780px; height: 780px; }
+  .hero { left: 560px; top: 120px; width: 620px; height: 560px; }
+  .verdict { left: 318px; top: 600px; width: 640px; height: 236px; rotate: .6deg; }
+  .crosshair { left: 860px; top: 0; width: 1px; height: 900px; background: color-mix(in srgb, var(--cw-text) 14%, transparent); }
+  .crosshair.h { left: 300px; top: 430px; width: 1000px; height: 1px; }
+
+  /* the right column: date, then numbered panels */
+  .right { left: 1300px; width: 272px; }
+  .date { top: 26px; height: 112px; rotate: 1.6deg; }
+  .date cw-clock { --cw-clock-size: 50px; }
+  .power { top: 166px; height: 172px; }
+  .temps { top: 352px; height: 214px; }
+  .events { top: 580px; height: 262px; }
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; height: 100%; --cw-stat-size: 34px; }
+  .quad { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; height: 100%; --cw-stat-size: 38px; }
+  .quad cw-stat, .duo cw-stat { border-left: 2px solid var(--cw-signal); padding-left: 8px; }
+
+  .tick { left: 318px; top: 852px; width: 960px; height: 30px; }
+  .keys { right: 72px; bottom: 16px; font: 500 11px ui-monospace, Menlo, monospace; color: var(--cw-text-dim); }
+  .keys kbd { border: 1px solid currentColor; padding: 0 4px; margin: 0 2px; }
+
+  /* switching screens: the page number and the name come in from the side in full motion */
+  [data-motion='full'] .swap { animation: swap 520ms cubic-bezier(.2, .8, .2, 1); }
+  @keyframes swap { from { translate: -60px 0; opacity: 0; } }
+</style>
+<body>
+<cw-stage id="stage" base="1600x900">
+  <div class="at crosshair"></div><div class="at crosshair h"></div>
+  <cw-ring class="at ring" id="ring" text="HOME CONTROL · 01 ホーム · 02 電気 · 03 照明 · LIVING · KITCHEN · STUDY · BEDROOM ·" speed="90"></cw-ring>
+  <cw-hero class="at hero" id="hero" name="HOME" sub="945W"></cw-hero>
+  <cw-folio class="at folio" id="folio" number="01" kicker="HOME" title="ホーム"></cw-folio>
+  <cw-verdict class="at verdict" id="verdict"></cw-verdict>
+
+  <div class="at side">
+    <cw-panel>
+      <div class="brand">わが家 <small>ONLINE</small></div>
+      <ul class="menu" id="menu">
+        <li><button data-screen="0" aria-current="true">ホーム <small>01</small></button></li>
+        <li><button data-screen="1">電気 <small>02</small></button></li>
+        <li><button data-screen="2">照明 <small>03</small></button></li>
+      </ul>
+      <div class="rule"></div>
+      <div class="cap">PEOPLE</div>
+      <div class="people"><cw-status id="p-aoi" label="アオイ"></cw-status><cw-status id="p-haru" label="ハル"></cw-status></div>
+      <div class="rule"></div>
+      <div class="cap">EVENTS</div>
+      <cw-log id="log" lines="9"></cw-log>
+    </cw-panel>
+  </div>
+
+  <cw-panel class="at right date"><cw-clock></cw-clock></cw-panel>
+  <cw-panel class="at right power" number="01" label="電力" sublabel="W">
+    <div class="duo"><cw-stat id="now" label="いま" warn-above="3000"></cw-stat><cw-stat id="solar" label="太陽光"></cw-stat></div>
+  </cw-panel>
+  <cw-panel class="at right temps" number="02" label="室温" sublabel="°C">
+    <div class="quad"><cw-stat id="t-living" label="居間" digits="1"></cw-stat><cw-stat id="t-kitchen" label="台所" digits="1"></cw-stat><cw-stat id="t-bed" label="寝室" digits="1"></cw-stat><cw-stat id="t-out" label="外" digits="1"></cw-stat></div>
+  </cw-panel>
+  <cw-panel class="at right events" number="03" label="照明" sublabel="点灯">
+    <div class="people" id="lights"></div>
+  </cw-panel>
+
+  <cw-panel class="at tick" style="--cw-panel-padding:4px 14px"><cw-ticker id="ticker" speed="60"></cw-ticker></cw-panel>
+  <div class="at keys"><kbd>1</kbd>–<kbd>3</kbd> 画面</div>
+</cw-stage>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const q = new URLSearchParams(location.search);
+  if (q.get('motion')) $('stage').setAttribute('motion', q.get('motion'));
+
+  // a small house that changes on its own
+  const rooms = [['居間', true], ['台所', true], ['書斎', false], ['寝室', true], ['浴室', false], ['玄関', false]];
+  let power = 945, solar = 1240, windowOpen = false, tick = 0;
+  const hhmm = () => new Date().toTimeString().slice(0, 5);
+  const screens = [
+    { number: '01', kicker: 'HOME', title: 'ホーム', name: 'HOME', sub: () => `${Math.round(power)}W` },
+    { number: '02', kicker: 'ENERGY', title: '電気', name: 'POWER', sub: () => `${(solar / 1000).toFixed(1)}kW` },
+    { number: '03', kicker: 'LIGHTS', title: '照明', name: 'LIGHT', sub: () => `${rooms.filter((r) => r[1]).length}/${rooms.length}` },
+  ];
+  let current = 0;
+  function show(i) {
+    current = i;
+    const s = screens[i];
+    Object.assign($('folio'), { number: s.number, kicker: s.kicker, title: s.title });
+    for (const el of [$('folio'), $('hero')]) { el.classList.remove('swap'); void el.offsetWidth; el.classList.add('swap'); }
+    document.querySelectorAll('#menu button').forEach((b) => b.setAttribute('aria-current', String(+b.dataset.screen === i)));
+    paint();
+  }
+  document.querySelectorAll('#menu button').forEach((b) => b.addEventListener('click', () => show(+b.dataset.screen)));
+  addEventListener('keydown', (e) => { if (/^[1-3]$/.test(e.key)) show(+e.key - 1); });
+
+  function paint() {
+    const s = screens[current];
+    Object.assign($('hero'), { name: s.name, sub: s.sub(), level: Math.min(1, power / 3000) });
+    $('hero').tags = [{ label: '外気', value: '14.2°C' }, { label: 'PEOPLE', value: '2' }, { label: '点灯', value: `${rooms.filter((r) => r[1]).length} 部屋` }];
+    $('verdict').items = [
+      { label: '玄関の鍵', state: 'locked' }, { label: '寝室の窓', state: windowOpen ? 'open' : 'closed' },
+      { label: '庭のカメラ', state: 'online' }, { label: '冷蔵庫', state: 'ok' }, { label: '電池', state: power > 2400 ? 'warn' : 'ok' },
+    ];
+    $('now').value = power; $('solar').value = solar;
+    $('lights').innerHTML = rooms.map(([n, on]) => `<cw-status label="${n}" state="${on ? 'online' : 'offline'}" text="${on ? '点灯' : '消灯'}"></cw-status>`).join('');
+  }
+
+  $('p-aoi').state = 'online'; $('p-aoi').text = '在宅';
+  $('p-haru').state = 'standby'; $('p-haru').text = '外出';
+  [['t-living', 22.4], ['t-kitchen', 23.0], ['t-bed', 20.7], ['t-out', 14.2]].forEach(([id, v]) => { $(id).value = v; });
+  $('log').push([
+    { time: hhmm(), level: 'info', type: '照明', text: '居間 80%' },
+    { time: hhmm(), level: 'info', type: '在宅', text: 'アオイが帰宅' },
+    { time: hhmm(), level: 'info', type: '家電', text: '洗濯を始めた' },
+    { time: hhmm(), level: 'info', type: '空調', text: '居間 22.5° に' },
+    { time: hhmm(), level: 'info', type: '照明', text: '台所 点灯' },
+    { time: hhmm(), level: 'info', type: '在宅', text: 'ハルが外出' },
+    { time: hhmm(), level: 'info', type: '鍵', text: '玄関を施錠' },
+  ].reverse());
+  $('ticker').push(['外気 14.2°C', '次のごみの日: 明日 燃えるごみ', 'ハル 19:30 ごろ帰宅の予定', '洗濯 残り 20 分']);
+  paint();
+
+  setInterval(() => {
+    tick++;
+    power = Math.max(300, Math.min(3200, power + (Math.random() - 0.45) * 220));
+    solar = Math.max(0, Math.min(2400, solar + (Math.random() - 0.5) * 120));
+    if (tick % 6 === 0) {
+      windowOpen = !windowOpen;
+      $('log').push({ time: hhmm(), level: windowOpen ? 'warn' : 'info', type: '窓', text: windowOpen ? '寝室の窓が開いた' : '寝室の窓を閉めた' });
+    }
+    if (tick % 4 === 0) { const r = rooms[(tick / 4) % rooms.length]; r[1] = !r[1]; }
+    paint();
+  }, 2000);
+</script>
+</body>
+</html>
